@@ -3,7 +3,7 @@
 	"displayName": "Hover Converter",
 	"description": "Hover over Hex or Decimal values to quickly get their corresponding values in Binary, Hex or Decimal.",
 	"version": "0.0.1",
-	"publisher": "bedrankara",
+	"publisher": "boolxiao",
 	"repository": "https://github.com/bedrankara/hoverconverter",
 	"homepage": "https://github.com/bedrankara/hoverconverter",
 	"icon": "logo.png",
@@ -11,13 +11,18 @@
 		"vscode": "^1.43.0"
 	},
 	"categories": [
-		"Programming Languages", "Other"
+		"Programming Languages",
+		"Other"
 	],
 	"keywords": [
-		"Converter","Hover","Hex", "Decimal", "Hover Converter"
+		"Converter",
+		"Hover",
+		"Hex",
+		"Decimal",
+		"Hover Converter"
 	],
 	"activationEvents": [
-		"onCommand:extension.enableHoverconverter"
+		"*"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -29,8 +34,28 @@
 			{
 				"command": "extension.disableHoverconverter",
 				"title": "Hover Converter: Disable Extension "
+			},
+			{
+				"command": "extension.deleteAllBranch",
+				"title": "Delete all local branchs but current branch"
+			},
+			{
+				"command": "extension.addAction",
+				"title": "Add an action"
 			}
-		]
+		],
+		"configuration": {
+			"type": "object",
+			"title": "hoverconverter",
+			"properties": {
+				"hoverMapping": {
+					"type": "object",
+					"scope": "application",
+					"default": {},
+					"description": "Custom hover mapping"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -52,5 +77,8 @@
 		"mocha": "^7.0.1",
 		"typescript": "^3.7.5",
 		"vscode-test": "^1.3.0"
+	},
+	"dependencies": {
+		"simple-git": "^2.11.0"
 	}
 }
