@@ -83,8 +83,21 @@ export function activate(context: vscode.ExtensionContext) {
 				}, 3000);
 			});
 		} catch (error) {
-	
+
 		}
+	});
+	let addAction = vscode.commands.registerCommand('extension.addAction', () => {
+		var setting: vscode.Uri = vscode.Uri.parse("untitled:" + "C:\summary.txt");
+		vscode.workspace.openTextDocument(setting).then((a: vscode.TextDocument) => {
+			vscode.window.showTextDocument(a, 1, false).then(e => {
+				e.edit(edit => {
+					edit.insert(new vscode.Position(0, 0), "Your advertisement here");
+				});
+			});
+		}, (error: any) => {
+			console.error(error);
+			debugger;
+		});
 	});
 	// const detectChange = vscode.languages.registerCodeActionsProvider({ scheme: '*', language: '*' }, {
 	// 	provideCodeActions(document, range, context, token) {
