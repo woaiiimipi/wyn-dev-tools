@@ -1,9 +1,9 @@
 'use strict';
 
 import * as vscode from 'vscode';
-import { win32 } from 'path';
-// @ts-ignore
 import simpleGit, { SimpleGit } from 'simple-git';
+// @ts-ignore
+import translate from 'translate';
 import { template } from './template';
 const openFileAndInsertText = async (fileName: string, findText: string, insertText: string) => {
 	const doc = await vscode.workspace.openTextDocument(fileName);
@@ -47,6 +47,12 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	let addAction = vscode.commands.registerCommand('extension.addAction', async () => {
+		const text = await translate('Hello World', 'zh');
+		if (text) {
+			vscode.window.showInformationMessage(text);
+			return;
+		}
+		
 		const path = vscode.workspace.rootPath + '/test.ts';
 		const actionName = await vscode.window.showInputBox({ placeHolder: '请输入action名称' });
 		const scenarioMap = {
@@ -95,9 +101,6 @@ export function activate(context: vscode.ExtensionContext) {
 			return acc.concat(scenarioMap[key](preResultList!.includes(key)));
 		}, []);
 
-		// vscode.window.showInputBox({ placeHolder: '请输入action名称' }).then((t) => {
-		// 	vscode.window.showInformationMessage(t || '');
-		// });
 		const selectedScenarios = await vscode.window.showQuickPick(items, { canPickMany: true, ignoreFocusOut: true, placeHolder: '确认子项' });
 		const isExtensionAction = await vscode.window.showQuickPick(['No', 'Yes'], { ignoreFocusOut: true, placeHolder: '是否是Extension类型的Action?' });
 		const root = vscode.workspace.rootPath;

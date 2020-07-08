@@ -10,8 +10,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
-// @ts-ignore
 const simple_git_1 = require("simple-git");
+// @ts-ignore
+const translate_1 = require("translate");
 const template_1 = require("./template");
 const openFileAndInsertText = (fileName, findText, insertText) => __awaiter(void 0, void 0, void 0, function* () {
     const doc = yield vscode.workspace.openTextDocument(fileName);
@@ -54,6 +55,11 @@ function activate(context) {
     });
     let addAction = vscode.commands.registerCommand('extension.addAction', () => __awaiter(this, void 0, void 0, function* () {
         var _a;
+        const text = yield translate_1.default('Hello World', 'zh');
+        if (text) {
+            vscode.window.showInformationMessage(text);
+            return;
+        }
         const path = vscode.workspace.rootPath + '/test.ts';
         const actionName = yield vscode.window.showInputBox({ placeHolder: '请输入action名称' });
         const scenarioMap = {
@@ -101,9 +107,6 @@ function activate(context) {
             // @ts-ignore
             return acc.concat(scenarioMap[key](preResultList.includes(key)));
         }, []);
-        // vscode.window.showInputBox({ placeHolder: '请输入action名称' }).then((t) => {
-        // 	vscode.window.showInformationMessage(t || '');
-        // });
         const selectedScenarios = yield vscode.window.showQuickPick(items, { canPickMany: true, ignoreFocusOut: true, placeHolder: '确认子项' });
         const isExtensionAction = yield vscode.window.showQuickPick(['No', 'Yes'], { ignoreFocusOut: true, placeHolder: '是否是Extension类型的Action?' });
         const root = vscode.workspace.rootPath;
