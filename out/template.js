@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.template = {
-    action: (lowerName, upperName) => `
-import { CheckFieldType, ActionMenuType } from 'Enums';
+    action: (lowerName, upperName) => `import { CheckFieldType, ActionMenuType } from 'Enums';
 import Property from '../../common/Property';
 import { ActionDefNS } from '../../../interfaces';
 import { checkCondition } from '../utils/actionStatusUtils';
@@ -41,10 +40,7 @@ export default class ${upperName}Action extends ActionBase {
   }
 }
 `,
-    containerts: (upperName) => `
-import React, { Component } from 'react';
-import DefinitionManager from 'dashboardCommon/core/context/managers/DefinitionManager';
-import DashboardContext from 'dashboardCommon/dashboardContext';
+    containerts: (upperName) => `import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { fromState, fromScenario } from 'PureUtils';
 
@@ -76,18 +72,15 @@ export class ${upperName}Container extends Component<${upperName}ContainerProps,
   }
 }
 `,
-    containerscss: (upperName) => `
-.dd-${upperName.replace(/\B([A-Z])/g, '-$1').toLowerCase()}-container {
-
+    containerscss: (upperName) => `.dd-${upperName.replace(/\B([A-Z])/g, '-$1').toLowerCase()}-container {
+  
 }
 `,
-    containerindex: (upperName, lowerName) => `
-import { showDraggableDialog } from 'CommonComponents3';
+    containerindex: (upperName, lowerName) => `import { showDraggableDialog } from 'CommonComponents3';
 
 import { ${upperName}Container } from './${upperName}Container';
 
-export const show${upperName}Dialog = showDraggableDialog(${upperName}Container, 'dialogs.${lowerName}.title');
-
+export const show${upperName}Dialog = showDraggableDialog(${upperName}Container, 'dialogs.${lowerName}.title', '${upperName.replace(/\B([A-Z])/g, '-$1').toLowerCase()}');
 `,
 };
 //# sourceMappingURL=template.js.map

@@ -1,12 +1,12 @@
 {
-	"name": "hoverconverter",
-	"displayName": "Hover Converter",
-	"description": "Hover over Hex or Decimal values to quickly get their corresponding values in Binary, Hex or Decimal.",
+	"name": "wyn-dev-tools",
+	"displayName": "Wyn dashboard development tools.",
+	"description": "1.Add an action.2.Delete all branchs but current branch.3.Delete",
 	"version": "0.0.1",
 	"publisher": "boolxiao",
-	"repository": "https://github.com/bedrankara/hoverconverter",
-	"homepage": "https://github.com/bedrankara/hoverconverter",
-	"icon": "logo.png",
+	"repository": "https://github.com/bedrankara/wyn-dev-tools",
+	"homepage": "https://github.com/bedrankara/wyn-dev-tools",
+	"icon": "wyn.png",
 	"engines": {
 		"vscode": "^1.43.0"
 	},
@@ -15,11 +15,11 @@
 		"Other"
 	],
 	"keywords": [
-		"Converter",
-		"Hover",
-		"Hex",
-		"Decimal",
-		"Hover Converter"
+		"wyn",
+		"dashboard",
+		"dev",
+		"wyn-dev-tools",
+		"wyn dev tools"
 	],
 	"activationEvents": [
 		"*"
@@ -27,14 +27,6 @@
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
-			{
-				"command": "extension.enableHoverconverter",
-				"title": "Hover Converter: Enable Extension"
-			},
-			{
-				"command": "extension.disableHoverconverter",
-				"title": "Hover Converter: Disable Extension "
-			},
 			{
 				"command": "extension.deleteAllBranch",
 				"title": "Delete all local branchs but current branch"
@@ -46,7 +38,7 @@
 		],
 		"configuration": {
 			"type": "object",
-			"title": "hoverconverter",
+			"title": "wyn-dev-tools",
 			"properties": {
 				"hoverMapping": {
 					"type": "object",
@@ -79,6 +71,7 @@
 		"vscode-test": "^1.3.0"
 	},
 	"dependencies": {
-		"simple-git": "^2.11.0"
+		"simple-git": "^2.11.0",
+		"translate": "1.1.2"
 	}
 }
