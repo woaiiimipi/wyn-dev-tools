@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const simple_git_1 = require("simple-git");
 // @ts-ignore
-const translate_1 = require("translate");
+const translate = require("translate");
 const template_1 = require("./template");
 const openFileAndInsertText = (fileName, findText, insertText) => __awaiter(void 0, void 0, void 0, function* () {
     const doc = yield vscode.workspace.openTextDocument(fileName);
@@ -55,7 +55,8 @@ function activate(context) {
     });
     let addAction = vscode.commands.registerCommand('extension.addAction', () => __awaiter(this, void 0, void 0, function* () {
         var _a;
-        const text = yield translate_1.default('Hello World', 'zh');
+        console.log(translate);
+        const text = yield translate.translate('Hello World', 'zh');
         if (text) {
             vscode.window.showInformationMessage(text);
             return;

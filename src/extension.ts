@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import simpleGit, { SimpleGit } from 'simple-git';
 // @ts-ignore
-import translate from 'translate';
+import * as translate from 'translate';
 import { template } from './template';
 const openFileAndInsertText = async (fileName: string, findText: string, insertText: string) => {
 	const doc = await vscode.workspace.openTextDocument(fileName);
@@ -47,7 +47,8 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	let addAction = vscode.commands.registerCommand('extension.addAction', async () => {
-		const text = await translate('Hello World', 'zh');
+		console.log(translate);
+		const text = await translate.translate('Hello World', 'zh');
 		if (text) {
 			vscode.window.showInformationMessage(text);
 			return;
