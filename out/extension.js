@@ -11,8 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const simple_git_1 = require("simple-git");
-// @ts-ignore
-const translate_1 = require("translate");
+const translate = require('translate');
 const template_1 = require("./template");
 const openFileAndInsertText = (fileName, findText, insertText) => __awaiter(void 0, void 0, void 0, function* () {
     const doc = yield vscode.workspace.openTextDocument(fileName);
@@ -55,8 +54,8 @@ function activate(context) {
     });
     let addAction = vscode.commands.registerCommand('extension.addAction', () => __awaiter(this, void 0, void 0, function* () {
         var _a;
-        console.log(translate_1.default);
-        const text = yield translate_1.default.translate('Hello World', 'zh');
+        console.log(translate);
+        const text = yield translate.translate('Hello World', 'zh');
         if (text) {
             vscode.window.showInformationMessage(text);
             return;
@@ -117,7 +116,11 @@ function activate(context) {
             'ActionBarUtils': root + '/src/pcBrowser/runTime/scenario/actionBar/utils/ActionBarUtils.ts',
             'ActionExecutor': root + '/src/common/core/visual/visualDef/interaction/ActionExecutor.ts',
             'ActionIndex': root + '/src/common/core/visual/visualDef/interaction/actions/index.ts',
-            'ActionTemplate': (actionName) => `${root}/src/common/core/visual/visualDef/interaction/actions/${actionName}Action.ts`
+            'ActionTemplate': (actionName) => `${root}/src/common/core/visual/visualDef/interaction/actions/${actionName}Action.ts`,
+            'DataAnalyzeFolder': (actionName) => `${root}/src/pcBrowser/runTime/scenario/dataAnalyze/${actionName}`,
+            'containerts': (upperName) => `/${upperName}Container.tsx`,
+            'containerscss': (upperName) => `/${upperName}Container.scss`,
+            'containerindex': `/index.ts`,
         };
         if (!actionName) {
             return;
@@ -131,13 +134,18 @@ function activate(context) {
         yield openFileAndInsertText(fileEnum.ActionBarUtils, '// add action handler here', snap2);
         const snap3 = `${upperName}Action,\n`;
         yield openFileAndInsertText(fileEnum.ActionExecutor, '// import action here', snap3);
-        const snap4 = `case ActionType.${upperName}:\n${space(8)}list = [new ${upperName}Action()];\n${space(8)}break;\n`;
+        const snap4 = `case ActionType.${upperName}:\n${space(8)}list = [new ${upperName}Action(def)];\n${space(8)}break;\n`;
         yield openFileAndInsertText(fileEnum.ActionExecutor, '// create action here', snap4);
-        const snap5 = `import ${upperName}Action from './${upperName}Action;\n`;
+        const snap5 = `import ${upperName}Action from './${upperName}Action';\n`;
         yield openFileAndInsertText(fileEnum.ActionIndex, '// import action here', snap5);
         yield openFileAndInsertText(fileEnum.ActionIndex, '// export action here', snap3);
         const content1 = Buffer.from(template_1.template.action(lowerName, upperName));
         yield vscode.workspace.fs.writeFile(vscode.Uri.file(fileEnum.ActionTemplate(upperName)), content1);
+        const folder = fileEnum.DataAnalyzeFolder(lowerName);
+        yield vscode.workspace.fs.createDirectory(vscode.Uri.file(folder));
+        yield vscode.workspace.fs.writeFile(vscode.Uri.file(folder + fileEnum.containerts(upperName)), Buffer.from(template_1.template.containerts(upperName)));
+        yield vscode.workspace.fs.writeFile(vscode.Uri.file(folder + fileEnum.containerscss(upperName)), Buffer.from(template_1.template.containerscss(upperName)));
+        yield vscode.workspace.fs.writeFile(vscode.Uri.file(folder + fileEnum.containerindex), Buffer.from(template_1.template.containerindex(upperName, lowerName)));
     }));
     // const detectChange = vscode.languages.registerCodeActionsProvider({ scheme: '*', language: '*' }, {
     // 	provideCodeActions(document, range, context, token) {

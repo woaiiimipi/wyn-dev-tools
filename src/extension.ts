@@ -2,8 +2,7 @@
 
 import * as vscode from 'vscode';
 import simpleGit, { SimpleGit } from 'simple-git';
-// @ts-ignore
-import translate from 'translate';
+const translate = require('translate');
 import { template } from './template';
 const openFileAndInsertText = async (fileName: string, findText: string, insertText: string) => {
 	const doc = await vscode.workspace.openTextDocument(fileName);
@@ -111,7 +110,11 @@ export function activate(context: vscode.ExtensionContext) {
 			'ActionBarUtils': root + '/src/pcBrowser/runTime/scenario/actionBar/utils/ActionBarUtils.ts',
 			'ActionExecutor': root + '/src/common/core/visual/visualDef/interaction/ActionExecutor.ts',
 			'ActionIndex': root + '/src/common/core/visual/visualDef/interaction/actions/index.ts',
-			'ActionTemplate': (actionName: string) => `${root}/src/common/core/visual/visualDef/interaction/actions/${actionName}Action.ts`
+			'ActionTemplate': (actionName: string) => `${root}/src/common/core/visual/visualDef/interaction/actions/${actionName}Action.ts`,
+			'DataAnalyzeFolder': (actionName: string) => `${root}/src/pcBrowser/runTime/scenario/dataAnalyze/${actionName}`,
+			'containerts': (upperName: string) => `/${upperName}Container.tsx`,
+			'containerscss': (upperName: string) => `/${upperName}Container.scss`,
+			'containerindex': `/index.ts`,
 		};
 		if (!actionName) {
 			return;
@@ -125,13 +128,18 @@ export function activate(context: vscode.ExtensionContext) {
 		await openFileAndInsertText(fileEnum.ActionBarUtils, '// add action handler here', snap2);
 		const snap3 = `${upperName}Action,\n`;
 		await openFileAndInsertText(fileEnum.ActionExecutor, '// import action here', snap3);
-		const snap4 = `case ActionType.${upperName}:\n${space(8)}list = [new ${upperName}Action()];\n${space(8)}break;\n`;
+		const snap4 = `case ActionType.${upperName}:\n${space(8)}list = [new ${upperName}Action(def)];\n${space(8)}break;\n`;
 		await openFileAndInsertText(fileEnum.ActionExecutor, '// create action here', snap4);
-		const snap5 = `import ${upperName}Action from './${upperName}Action;\n`;
+		const snap5 = `import ${upperName}Action from './${upperName}Action';\n`;
 		await openFileAndInsertText(fileEnum.ActionIndex, '// import action here', snap5);
 		await openFileAndInsertText(fileEnum.ActionIndex, '// export action here', snap3);
 		const content1 = Buffer.from(template.action(lowerName, upperName));
 		await vscode.workspace.fs.writeFile(vscode.Uri.file(fileEnum.ActionTemplate(upperName)), content1);
+		const folder = fileEnum.DataAnalyzeFolder(lowerName);
+		await vscode.workspace.fs.createDirectory(vscode.Uri.file(folder));
+		await vscode.workspace.fs.writeFile(vscode.Uri.file(folder + fileEnum.containerts(upperName)), Buffer.from(template.containerts(upperName)));
+		await vscode.workspace.fs.writeFile(vscode.Uri.file(folder + fileEnum.containerscss(upperName)), Buffer.from(template.containerscss(upperName)));
+		await vscode.workspace.fs.writeFile(vscode.Uri.file(folder + fileEnum.containerindex), Buffer.from(template.containerindex(upperName, lowerName)));
 	});
 	// const detectChange = vscode.languages.registerCodeActionsProvider({ scheme: '*', language: '*' }, {
 	// 	provideCodeActions(document, range, context, token) {

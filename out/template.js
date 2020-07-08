@@ -41,5 +41,53 @@ export default class ${upperName}Action extends ActionBase {
   }
 }
 `,
+    containerts: (upperName) => `
+import React, { Component } from 'react';
+import DefinitionManager from 'dashboardCommon/core/context/managers/DefinitionManager';
+import DashboardContext from 'dashboardCommon/dashboardContext';
+import { connect } from 'react-redux';
+import { fromState, fromScenario } from 'PureUtils';
+
+interface ${upperName}ContainerProps {
+  scenario: any;
+}
+interface ${upperName}ContainerState {
+}
+const mapStateToProps = (state, { scenario }) => {
+  // const actualScenario = fromState.scenarioOrInnerPivotTableById(scenario.id, state); // warning: make sure subscribe event update on scenario, does it nessary?
+  // return {
+  //   scenario: actualScenario,
+  // };
+};
+@(connect(mapStateToProps) as ClassDecorator)
+export class ${upperName}Container extends Component<${upperName}ContainerProps, ${upperName}ContainerState>{
+  constructor(props) {
+    super(props);
+  }
+  state: ${upperName}ContainerState = {
+  };
+
+  public render() {
+    return (
+      <div className="dd-${upperName.replace(/\B([A-Z])/g, '-$1').toLowerCase()}-container dd-action-bar-dialog">
+        dialog content
+      </div>
+    );
+  }
+}
+`,
+    containerscss: (upperName) => `
+.dd-${upperName.replace(/\B([A-Z])/g, '-$1').toLowerCase()}-container {
+
+}
+`,
+    containerindex: (upperName, lowerName) => `
+import { showDraggableDialog } from 'CommonComponents3';
+
+import { ${upperName}Container } from './${upperName}Container';
+
+export const show${upperName}Dialog = showDraggableDialog(${upperName}Container, 'dialogs.${lowerName}.title');
+
+`,
 };
 //# sourceMappingURL=template.js.map
