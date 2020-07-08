@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import simpleGit, { SimpleGit } from 'simple-git';
 // @ts-ignore
-import * as translate from 'translate';
+import translate from 'translate';
 import { template } from './template';
 const openFileAndInsertText = async (fileName: string, findText: string, insertText: string) => {
 	const doc = await vscode.workspace.openTextDocument(fileName);
