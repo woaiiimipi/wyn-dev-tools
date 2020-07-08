@@ -1,58 +1,39 @@
 'use strict';
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 // @ts-ignore
 const simple_git_1 = require("simple-git");
+const template_1 = require("./template");
+const openFileAndInsertText = (fileName, findText, insertText) => __awaiter(void 0, void 0, void 0, function* () {
+    const doc = yield vscode.workspace.openTextDocument(fileName);
+    const content = doc.getText();
+    const offset = content.indexOf(findText);
+    const position = doc.positionAt(offset);
+    const editor = yield vscode.window.showTextDocument(doc, 1, false);
+    yield editor.edit(e => {
+        e.insert(position, insertText);
+    });
+});
+const space = (count) => ' '.repeat(count);
 function activate(context) {
-    var _a, _b;
-    var enableExtension = false;
-    vscode.commands.registerCommand('extension.enableHoverconverter', () => {
-        vscode.window.showInformationMessage('Hover Converter Enabled');
-        enableExtension = true;
-    });
-    const textEditor = vscode.window.activeTextEditor;
-    const firstLine = textEditor.document.lineAt(0);
-    const lastLine = textEditor.document.lineAt(textEditor.document.lineCount - 1);
-    const textRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
-    vscode.window.showInformationMessage(((_a = textEditor) === null || _a === void 0 ? void 0 : _a.document.getText()) || '');
-    vscode.window.showInformationMessage(((_b = vscode.window.activeTextEditor) === null || _b === void 0 ? void 0 : _b.document.fileName) || '');
-    vscode.commands.registerCommand('extension.disableHoverconverter', () => {
-        enableExtension = false;
-        vscode.window.showInformationMessage('Hover Converter Disabled');
-    });
-    var regexHex = /^0x[0-9a-fA-F]+$/g;
-    var regexHexc = /^[0-9a-fA-F]+[h]$/g;
-    var regexDec = /^-?[0-9]+$/g;
-    const terminal1 = vscode.window.createTerminal('t1');
-    terminal1.sendText('git --version');
-    const terminals = vscode.window.terminals;
-    terminal1.show(true);
-    const t = terminals.find(t => t.name === 't1');
     let hover = vscode.languages.registerHoverProvider({ scheme: '*', language: '*' }, {
         provideHover(document, position, token) {
             var hoveredWord = document.getText(document.getWordRangeAtPosition(position));
-            var markdownString = new vscode.MarkdownString();
             const config = vscode.workspace.getConfiguration();
-            if ((regexHex.test(hoveredWord.toString()) || regexHexc.test(hoveredWord.toString())) && enableExtension) {
-                markdownString.appendCodeblock(`Dec:\n${parseInt(hoveredWord, 16)}\nBinary:\n${parseInt(hoveredWord, 16).toString(2)}`, 'javascript');
-                return {
-                    contents: [markdownString]
-                };
-            }
-            else if (regexDec.test(hoveredWord.toString()) && enableExtension) {
-                var input = Number(hoveredWord.toString());
-                markdownString.appendCodeblock(`Hex:\n0x${input.toString(16).toUpperCase()}\nBinary:\n${input.toString(2).replace(/(^\s+|\s+$)/, '')} `, 'javascript');
-                return {
-                    contents: [markdownString]
-                };
-            }
-            else {
-                const hoverMappingResult = config.get('hoverMapping')[hoveredWord].split('\n');
-                return {
-                    contents: [...hoverMappingResult],
-                };
-                // return new vscode.Hover('hover text');
-            }
+            const hoverMappingResult = config.get('hoverMapping')[hoveredWord].split('\n');
+            return {
+                contents: [...hoverMappingResult],
+            };
+            // return new vscode.Hover('hover text');
         }
     });
     let deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', () => {
@@ -71,19 +52,89 @@ function activate(context) {
         catch (error) {
         }
     });
-    let addAction = vscode.commands.registerCommand('extension.addAction', () => {
-        var setting = vscode.Uri.parse("untitled:" + "C:\summary.txt");
-        vscode.workspace.openTextDocument(setting).then((a) => {
-            vscode.window.showTextDocument(a, 1, false).then(e => {
-                e.edit(edit => {
-                    edit.insert(new vscode.Position(0, 0), "Your advertisement here");
-                });
-            });
-        }, (error) => {
-            console.error(error);
-            debugger;
-        });
-    });
+    let addAction = vscode.commands.registerCommand('extension.addAction', () => __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        const path = vscode.workspace.rootPath + '/test.ts';
+        const actionName = yield vscode.window.showInputBox({ placeHolder: '请输入action名称' });
+        const scenarioMap = {
+            pivotCharts: (picked) => [
+                { label: 'column', picked },
+                { label: 'bar', picked },
+                { label: 'area', picked },
+            ],
+            richEditor: (picked) => [
+                { label: 'richEditor', picked },
+            ],
+            picture: (picked) => [
+                { label: 'picture', picked },
+            ],
+            slicer: (picked) => [
+                { label: 'tree', picked },
+                { label: 'dateRange', picked },
+                { label: 'comboBox', picked },
+                { label: 'label', picked },
+                { label: 'relativeDate', picked },
+                { label: 'dataRange', picked },
+            ],
+            container: (picked) => [
+                { label: 'container', picked },
+            ],
+            tabContainer: (picked) => [
+                { label: 'tabContainer', picked },
+            ],
+            spreadChart: (picked) => [
+                { label: 'spreadChart', picked },
+            ],
+        };
+        const preItems = [
+            { label: 'pivotCharts', picked: true },
+            { label: 'richEditor', },
+            { label: 'picture', },
+            { label: 'container', },
+            { label: 'tabContainer' },
+            { label: 'slicer' },
+            { label: 'spreadChart' },
+        ];
+        const preResult = yield vscode.window.showQuickPick(preItems, { canPickMany: true, ignoreFocusOut: true, placeHolder: '请选择需要应用的Scenario类型' });
+        const preResultList = (_a = preResult) === null || _a === void 0 ? void 0 : _a.map(i => i.label);
+        const items = ['pivotCharts', 'richEditor', 'picture', 'container', 'tabContainer', 'slicer', 'spreadChart'].reduce((acc, key) => {
+            // @ts-ignore
+            return acc.concat(scenarioMap[key](preResultList.includes(key)));
+        }, []);
+        // vscode.window.showInputBox({ placeHolder: '请输入action名称' }).then((t) => {
+        // 	vscode.window.showInformationMessage(t || '');
+        // });
+        const selectedScenarios = yield vscode.window.showQuickPick(items, { canPickMany: true, ignoreFocusOut: true, placeHolder: '确认子项' });
+        const isExtensionAction = yield vscode.window.showQuickPick(['No', 'Yes'], { ignoreFocusOut: true, placeHolder: '是否是Extension类型的Action?' });
+        const root = vscode.workspace.rootPath;
+        const fileEnum = {
+            'Action': root + '/src/common/core/visual/interfaces/Action.ts',
+            'Enum': root + '/src/common/interfaces/Enums.ts',
+            'ActionBarUtils': root + '/src/pcBrowser/runTime/scenario/actionBar/utils/ActionBarUtils.ts',
+            'ActionExecutor': root + '/src/common/core/visual/visualDef/interaction/ActionExecutor.ts',
+            'ActionIndex': root + '/src/common/core/visual/visualDef/interaction/actions/index.ts',
+            'ActionTemplate': (actionName) => `${root}/src/common/core/visual/visualDef/interaction/actions/${actionName}Action.ts`
+        };
+        if (!actionName) {
+            return;
+        }
+        const upperName = `${actionName.charAt(0).toUpperCase()}${actionName.slice(1)}`;
+        const lowerName = `${actionName.charAt(0).toLowerCase()}${actionName.slice(1)}`;
+        const snap1 = `${upperName} = '${lowerName}',\n`;
+        yield openFileAndInsertText(fileEnum.Action, '// add action type here', snap1);
+        yield openFileAndInsertText(fileEnum.Enum, '// add action menu type here', snap1);
+        const snap2 = `case ActionMenuType.${upperName}: {\n${space(6)}return;\n${space(4)}}\n`;
+        yield openFileAndInsertText(fileEnum.ActionBarUtils, '// add action handler here', snap2);
+        const snap3 = `${upperName}Action,\n`;
+        yield openFileAndInsertText(fileEnum.ActionExecutor, '// import action here', snap3);
+        const snap4 = `case ActionType.${upperName}:\n${space(8)}list = [new ${upperName}Action()];\n${space(8)}break;\n`;
+        yield openFileAndInsertText(fileEnum.ActionExecutor, '// create action here', snap4);
+        const snap5 = `import ${upperName}Action from './${upperName}Action;\n`;
+        yield openFileAndInsertText(fileEnum.ActionIndex, '// import action here', snap5);
+        yield openFileAndInsertText(fileEnum.ActionIndex, '// export action here', snap3);
+        const content1 = Buffer.from(template_1.template.action(lowerName, upperName));
+        yield vscode.workspace.fs.writeFile(vscode.Uri.file(fileEnum.ActionTemplate(upperName)), content1);
+    }));
     // const detectChange = vscode.languages.registerCodeActionsProvider({ scheme: '*', language: '*' }, {
     // 	provideCodeActions(document, range, context, token) {
     // 		return [{ title: 'a', kind: 'a', tooltip: 'aaaa' }];
@@ -91,6 +142,7 @@ function activate(context) {
     // });
     context.subscriptions.push(hover);
     context.subscriptions.push(deleteAllBranch);
+    context.subscriptions.push(addAction);
 }
 exports.activate = activate;
 function deactivate() { }
