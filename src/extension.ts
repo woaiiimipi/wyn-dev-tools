@@ -3,23 +3,14 @@
 import * as vscode from 'vscode';
 import simpleGit, { SimpleGit } from 'simple-git';
 import { template } from './template';
-import { scenarioMap } from './enums';
-const openFileAndInsertText = async (fileName: string, findText: string, insertText: string) => {
-	const doc = await vscode.workspace.openTextDocument(fileName);
-	const content = doc.getText();
-	const offset = content.indexOf(findText);
-	const position = doc.positionAt(offset);
-	const editor = await vscode.window.showTextDocument(doc, 1, false);
-	await editor.edit(e => {
-		e.insert(position, insertText);
-	});
-};
-const space = (count: number) => ' '.repeat(count);
+import { scenarioMap, fileEnum } from './enums';
+import { createFile, openFileAndInsertText, space, addActionForDefFiles } from './utils';
+const { showInputBox, showQuickPick } = vscode.window;
 export function activate(context: vscode.ExtensionContext) {
 
-	let hover = vscode.languages.registerHoverProvider({ scheme: '*', language: '*' }, {
+	const hover = vscode.languages.registerHoverProvider({ scheme: '*', language: '*' }, {
 		provideHover(document, position, token) {
-			var hoveredWord = document.getText(document.getWordRangeAtPosition(position));
+			const hoveredWord = document.getText(document.getWordRangeAtPosition(position));
 			const config = vscode.workspace.getConfiguration();
 
 			const hoverMappingResult = (config.get('hoverMapping') as any)[hoveredWord].split('\n');
@@ -29,7 +20,7 @@ export function activate(context: vscode.ExtensionContext) {
 			// return new vscode.Hover('hover text');
 		}
 	});
-	let deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', () => {
+	const deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', () => {
 		try {
 			// @ts-ignore
 			const git: SimpleGit = simpleGit(vscode.workspace.workspaceFolders[0].uri.fsPath);
@@ -46,8 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 	let addAction = vscode.commands.registerCommand('extension.addAction', async () => {
-		const path = vscode.workspace.rootPath + '/test.ts';
-		const actionName = await vscode.window.showInputBox({ placeHolder: '请输入action名称' });
+		const actionName = await showInputBox({ placeHolder: '请输入action名称' });
 
 		const preItems: vscode.QuickPickItem[] = [
 			{ label: 'pivotCharts', picked: true },
@@ -58,36 +48,17 @@ export function activate(context: vscode.ExtensionContext) {
 			{ label: 'slicer' },
 			{ label: 'spreadChart' },
 		];
-		const preResult = await vscode.window.showQuickPick(preItems, { canPickMany: true, ignoreFocusOut: true, placeHolder: '请选择需要应用的Scenario类型' });
+		const preResult = await showQuickPick(preItems, { canPickMany: true, ignoreFocusOut: true, placeHolder: '请选择需要应用的Scenario类型' });
 		const preResultList = preResult?.map(i => i.label);
 		const items: vscode.QuickPickItem[] = Object.keys(scenarioMap).reduce((acc: vscode.QuickPickItem[], key) => {
 			// @ts-ignore
 			return acc.concat(scenarioMap[key](preResultList!.includes(key)));
 		}, []);
 
-		const selectedScenarios = await vscode.window.showQuickPick(items, { canPickMany: true, ignoreFocusOut: true, placeHolder: '确认子项' });
-		const isExtensionAction = (await vscode.window.showQuickPick(['No', 'Yes'], { ignoreFocusOut: true, placeHolder: '是否是Extension类型的Action?' })) === 'Yes';
-		const showDialog = (await vscode.window.showQuickPick(['Yes', 'No'], { ignoreFocusOut: true, placeHolder: '是否显示Dialog?' })) === 'Yes';
-		const root = vscode.workspace.rootPath;
-		const fileEnum = {
-			'Action': root + '/src/common/core/visual/interfaces/Action.ts',
-			'commonActions': root + '/src/common/widgets/buildIn/defs/commonActions.ts',
-			'Enum': root + '/src/common/interfaces/Enums.ts',
-			'ActionBarUtils': root + '/src/pcBrowser/runTime/scenario/actionBar/utils/ActionBarUtils.ts',
-			'ActionExecutor': root + '/src/common/core/visual/visualDef/interaction/ActionExecutor.ts',
-			'ActionIndex': root + '/src/common/core/visual/visualDef/interaction/actions/index.ts',
-			'ActionTemplate': (actionName: string) => `${root}/src/common/core/visual/visualDef/interaction/actions/${actionName}Action.ts`,
-			'DataAnalyzeFolder': (actionName: string) => `${root}/src/pcBrowser/runTime/scenario/dataAnalyze/${actionName}`,
-			'containerts': (upperName: string) => `/${upperName}Container.tsx`,
-			'containerscss': (upperName: string) => `/${upperName}Container.scss`,
-			'containerindex': `/index.ts`,
-			'en': root + `/src/common/services/i18n/locales/en.js`,
-			'zh': root + `/src/common/services/i18n/locales/zh.js`,
-			'zh_TW': root + `/src/common/services/i18n/locales/zh_TW.ts`,
-			'pivotCharts': root + '/src/common/widgets/buildIn/pivotCharts',
-			'slicers': root + '/src/common/widgets/buildIn/slicers',
-			'others': root + '/src/common/widgets/buildIn/others',
-		};
+		const selectedScenarios = await showQuickPick(items, { canPickMany: true, ignoreFocusOut: true, placeHolder: '确认子项' });
+		const isExtensionAction = (await showQuickPick(['No', 'Yes'], { ignoreFocusOut: true, placeHolder: '是否是Extension类型的Action?' })) === 'Yes';
+		const showDialog = (await showQuickPick(['Yes', 'No'], { ignoreFocusOut: true, placeHolder: '是否显示Dialog?' })) === 'Yes';
+
 		if (!actionName) {
 			return;
 		}
@@ -95,16 +66,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const lowerName = `${actionName.charAt(0).toLowerCase()}${actionName.slice(1)}`;
 		if (isExtensionAction) {
 			await openFileAndInsertText(fileEnum.Action, '// add extension action type here', `${upperName} = '_${lowerName}',\n${space(4)}`);
-		const extensionCommonAction = `export const ${lowerName} = {
-		type: ActionDefNS.ActionType.Extension,
-		name: '${lowerName}',
-		path: '${lowerName}',
-		extensionType: ActionDefNS.ExtensionType.${upperName},
-		displayNameKey: 'actionBar.${lowerName}',
-		iconCss: 'icon-${lowerName.replace(/\B([A-Z])/g, '-$1').toLowerCase()}',
-	};
-  `;
-			await openFileAndInsertText(fileEnum.commonActions, '// add extension action here', extensionCommonAction);
+			await openFileAndInsertText(fileEnum.commonActions, '// add extension action here', template.extensionCommonAction(upperName, lowerName));
 		} else {
 			const snap1 = `${upperName} = '${lowerName}',\n${space(4)}`;
 			await openFileAndInsertText(fileEnum.Action, '// add action type here', snap1);
@@ -135,14 +97,14 @@ export function activate(context: vscode.ExtensionContext) {
 		const snap5 = `import ${upperName}Action from './${upperName}Action';\n`;
 		await openFileAndInsertText(fileEnum.ActionIndex, '// import action here', snap5);
 		await openFileAndInsertText(fileEnum.ActionIndex, '// export action here', snap3);
-		const content1 = Buffer.from(template.action(lowerName, upperName));
-		await vscode.workspace.fs.writeFile(vscode.Uri.file(fileEnum.ActionTemplate(upperName)), content1);
+		await createFile(fileEnum.ActionTemplate(upperName), template.action(lowerName, upperName));
 		if (showDialog) {
 			const folder = fileEnum.DataAnalyzeFolder(lowerName);
 			await vscode.workspace.fs.createDirectory(vscode.Uri.file(folder));
-			await vscode.workspace.fs.writeFile(vscode.Uri.file(folder + fileEnum.containerts(upperName)), Buffer.from(template.containerts(upperName)));
-			await vscode.workspace.fs.writeFile(vscode.Uri.file(folder + fileEnum.containerscss(upperName)), Buffer.from(template.containerscss(upperName)));
-			await vscode.workspace.fs.writeFile(vscode.Uri.file(folder + fileEnum.containerindex), Buffer.from(template.containerindex(upperName, lowerName)));
+			await createFile(folder + fileEnum.containerts(upperName), template.containerts(upperName));
+			await createFile(folder + fileEnum.containerscss(upperName), template.containerscss(upperName));
+			await createFile(folder + fileEnum.containerindex, template.containerindex(upperName, lowerName));
+			await openFileAndInsertText(fileEnum.mainScss, '// add import here', `@import './scenario/dataAnalyze/${lowerName}/${upperName}Container.scss';\n`);
 		}
 		const snap6 = `${lowerName}: '${upperName.replace(/\B([A-Z])/g, ' $1')}',\n${space(4)}`;
 		await openFileAndInsertText(fileEnum.en, '// add action name here', snap6);
@@ -159,41 +121,10 @@ export function activate(context: vscode.ExtensionContext) {
 		if (!selectedScenarios) {
 			return;
 		}
-		for (let i = 0; i < selectedScenarios.length; i++) {
-			const def = selectedScenarios[i].label;
-			let actionDef = `{
-			  type: ActionDefNS.ActionType.${upperName},
-			},\n${space(6)}`;
-			if (isExtensionAction) {
-				actionDef = `DVChartActions.${lowerName},\n${space(6)}`;
-			}
-			try {
-				await openFileAndInsertText(`${fileEnum.pivotCharts}/${def}.ts`, '// add action here', actionDef);
-			} catch (error) {
-				try {
-					await openFileAndInsertText(`${fileEnum.slicers}/${def}.ts`, '// add action here', actionDef);
-				} catch (error) {
-					if (def === 'spreadChart') {
-						actionDef = `{
-	  	type: ActionDefNS.ActionType.${upperName},
-		},\n${space(4)}`;
-						if (isExtensionAction) {
-							actionDef = `DVChartActions.${lowerName},\n${space(4)}`;
-						}
-					}
-					await openFileAndInsertText(`${fileEnum.others}/${def}.ts`, '// add action here', actionDef);
-				}
-			}
-		}
+		addActionForDefFiles(selectedScenarios, upperName, lowerName, isExtensionAction);
 	});
-	// const detectChange = vscode.languages.registerCodeActionsProvider({ scheme: '*', language: '*' }, {
-	// 	provideCodeActions(document, range, context, token) {
-	// 		return [{ title: 'a', kind: 'a', tooltip: 'aaaa' }];
-	// 	}
-	// });
-	context.subscriptions.push(hover);
-	context.subscriptions.push(deleteAllBranch);
-	context.subscriptions.push(addAction);
+
+	context.subscriptions.push(hover, deleteAllBranch, addAction);
 }
 
 export function deactivate() { }

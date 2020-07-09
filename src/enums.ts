@@ -64,3 +64,24 @@ export const scenarioMap = {
     'spreadChart',
   ].map(i => ({ label: i, picked })),
 };
+const root = vscode.workspace.rootPath;
+export const fileEnum = {
+  'Action': root + '/src/common/core/visual/interfaces/Action.ts',
+  'commonActions': root + '/src/common/widgets/buildIn/defs/commonActions.ts',
+  'Enum': root + '/src/common/interfaces/Enums.ts',
+  'ActionBarUtils': root + '/src/pcBrowser/runTime/scenario/actionBar/utils/ActionBarUtils.ts',
+  'ActionExecutor': root + '/src/common/core/visual/visualDef/interaction/ActionExecutor.ts',
+  'ActionIndex': root + '/src/common/core/visual/visualDef/interaction/actions/index.ts',
+  'ActionTemplate': (actionName: string) => `${root}/src/common/core/visual/visualDef/interaction/actions/${actionName}Action.ts`,
+  'DataAnalyzeFolder': (actionName: string) => `${root}/src/pcBrowser/runTime/scenario/dataAnalyze/${actionName}`,
+  'containerts': (upperName: string) => `/${upperName}Container.tsx`,
+  'containerscss': (upperName: string) => `/${upperName}Container.scss`,
+  'containerindex': `/index.ts`,
+  'en': root + `/src/common/services/i18n/locales/en.js`,
+  'zh': root + `/src/common/services/i18n/locales/zh.js`,
+  'zh_TW': root + `/src/common/services/i18n/locales/zh_TW.ts`,
+  'pivotCharts': root + '/src/common/widgets/buildIn/pivotCharts',
+  'slicers': root + '/src/common/widgets/buildIn/slicers',
+  'others': root + '/src/common/widgets/buildIn/others',
+  'mainScss': root + '/src/pcBrowser/runTime/main.scss',
+};

@@ -84,4 +84,13 @@ import { ${upperName}Container } from './${upperName}Container';
 
 export const show${upperName}Dialog = showDraggableDialog(${upperName}Container, 'dialogs.${lowerName}.title', '${upperName.replace(/\B([A-Z])/g, '-$1').toLowerCase()}');
 `,
+  extensionCommonAction: (upperName: string, lowerName: string) => `export const ${lowerName} = {
+  type: ActionDefNS.ActionType.Extension,
+  name: '${lowerName}',
+  path: '${lowerName}',
+  extensionType: ActionDefNS.ExtensionType.${upperName},
+  displayNameKey: 'actionBar.${lowerName}',
+  iconCss: 'icon-${lowerName.replace(/\B([A-Z])/g, '-$1').toLowerCase()}',
+};
+`
 };
