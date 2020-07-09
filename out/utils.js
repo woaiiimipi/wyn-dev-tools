@@ -41,8 +41,8 @@ exports.addActionForDefFiles = (selectedScenarios, upperName, lowerName, isExten
     for (let i = 0; i < selectedScenarios.length; i++) {
         const def = selectedScenarios[i].label;
         let actionDef = `{
-${exports.space(6)}type: ActionDefNS.ActionType.${upperName},
-${exports.space(4)}},\n${exports.space(6)}`;
+${exports.space(8)}type: ActionDefNS.ActionType.${upperName},
+${exports.space(6)}},\n${exports.space(6)}`;
         if (isExtensionAction) {
             actionDef = `DVChartActions.${lowerName},\n${exports.space(6)}`;
         }
@@ -56,8 +56,8 @@ ${exports.space(4)}},\n${exports.space(6)}`;
             catch (error) {
                 if (def === 'spreadChart') {
                     actionDef = `{
-${exports.space(4)}type: ActionDefNS.ActionType.${upperName},
-${exports.space(2)}},\n${exports.space(4)}`;
+${exports.space(6)}type: ActionDefNS.ActionType.${upperName},
+${exports.space(4)}},\n${exports.space(4)}`;
                     if (isExtensionAction) {
                         actionDef = `DVChartActions.${lowerName},\n${exports.space(4)}`;
                     }
