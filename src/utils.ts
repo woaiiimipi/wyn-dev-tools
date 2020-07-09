@@ -33,8 +33,8 @@ export const addActionForDefFiles = async (selectedScenarios: vscode.QuickPickIt
   for (let i = 0; i < selectedScenarios.length; i++) {
     const def = selectedScenarios[i].label;
     let actionDef = `{
-      type: ActionDefNS.ActionType.${upperName},
-    },\n${space(6)}`;
+${space(6)}type: ActionDefNS.ActionType.${upperName},
+${space(4)}},\n${space(6)}`;
     if (isExtensionAction) {
       actionDef = `DVChartActions.${lowerName},\n${space(6)}`;
     }
@@ -46,8 +46,8 @@ export const addActionForDefFiles = async (selectedScenarios: vscode.QuickPickIt
       } catch (error) {
         if (def === 'spreadChart') {
           actionDef = `{
-    type: ActionDefNS.ActionType.${upperName},
-  },\n${space(4)}`;
+${space(4)}type: ActionDefNS.ActionType.${upperName},
+${space(2)}},\n${space(4)}`;
           if (isExtensionAction) {
             actionDef = `DVChartActions.${lowerName},\n${space(4)}`;
           }
