@@ -24,7 +24,6 @@ function activate(context) {
             return {
                 contents: [...hoverMappingResult],
             };
-            // return new vscode.Hover('hover text');
         }
     });
     const deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', () => {
@@ -43,7 +42,7 @@ function activate(context) {
         catch (error) {
         }
     });
-    let addAction = vscode.commands.registerCommand('extension.addAction', () => __awaiter(this, void 0, void 0, function* () {
+    const addAction = vscode.commands.registerCommand('extension.addAction', () => __awaiter(this, void 0, void 0, function* () {
         var _a;
         const actionName = yield showInputBox({ placeHolder: '请输入action名称' });
         const preItems = [

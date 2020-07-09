@@ -14,7 +14,7 @@ Wyn dashboard dev tools
 
 ## Release Notes
 
-### 0.0.1
+### 0.0.4
 
 Initial release of Wyn Dashboard Dev Tools
 

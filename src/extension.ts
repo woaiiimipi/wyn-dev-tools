@@ -17,7 +17,6 @@ export function activate(context: vscode.ExtensionContext) {
 			return {
 				contents: [...hoverMappingResult],
 			};
-			// return new vscode.Hover('hover text');
 		}
 	});
 	const deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', () => {
@@ -36,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		}
 	});
-	let addAction = vscode.commands.registerCommand('extension.addAction', async () => {
+	const addAction = vscode.commands.registerCommand('extension.addAction', async () => {
 		const actionName = await showInputBox({ placeHolder: '请输入action名称' });
 
 		const preItems: vscode.QuickPickItem[] = [
