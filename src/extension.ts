@@ -77,18 +77,17 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		if (isExtensionAction) {
 			const showDialogLogic = ` showActiveDialog(show${upperName}Dialog, ActionDefNS.ExtensionType.${upperName}, position, descriptor, scenario, dispatch);`;
-			const snapAddExtension = `case ActionDefNS.ExtensionType.${upperName}: {
-          return${showDialog ? showDialogLogic : ';'};
-		    }
-		  	`;
+			const snapAddExtension = `case ActionDefNS.ExtensionType.${upperName}: {\n${space(10)}return${showDialog ? showDialogLogic : ';'}${space(8)}}\n${space(8)}`;
 			await openFileAndInsertText(fileEnum.ActionBarUtils, '// add extension action handler here', snapAddExtension);
 		} else {
 			const showDialogLogic = ` showActiveDialog(show${upperName}Dialog, ActionMenuType.${upperName}, position, descriptor, scenario, dispatch);`;
 			const snap2 = `case ActionMenuType.${upperName}: {\n${space(6)}return${showDialog ? showDialogLogic : ';'}\n${space(4)}}\n${space(2)}`;
 			await openFileAndInsertText(fileEnum.ActionBarUtils, '// add action handler here', snap2);
-		}
-		const snap3 = `${upperName}Action,\n${space(2)}`;
-		await openFileAndInsertText(fileEnum.ActionExecutor, '// import action here', snap3);
+    }
+    const snap3 = `${upperName}Action,\n${space(2)}`;
+    if (!isExtensionAction) {
+      await openFileAndInsertText(fileEnum.ActionExecutor, '// import action here', snap3);
+    }
 		if (!isExtensionAction) {
 			const snap4 = `case ActionType.${upperName}:\n${space(8)}list = [new ${upperName}Action(def)];\n${space(8)}break;\n${space(6)}`;
 			await openFileAndInsertText(fileEnum.ActionExecutor, '// create action here', snap4);

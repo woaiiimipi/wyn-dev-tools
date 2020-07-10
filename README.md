@@ -6,15 +6,14 @@ Wyn dashboard dev tools
 --------
 
 ### F1 -> input "Add an action"
-
--------
-### To enable/disable the extension open the command palette (F1 or CTRL+SHIFT+P) and enter the following commands
+### F1 -> input "Delete all local branchs but current branch"
+### Open Setting.json -> click Extensions -> click 'wyn-dev-tools' -> click 'Edit in setting.json' -> edit hoverMapping object
 
 -------
 
 ## Release Notes
 
-### 0.0.4
+### 0.0.7
 
 Initial release of Wyn Dashboard Dev Tools
 

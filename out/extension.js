@@ -83,10 +83,7 @@ function activate(context) {
         }
         if (isExtensionAction) {
             const showDialogLogic = ` showActiveDialog(show${upperName}Dialog, ActionDefNS.ExtensionType.${upperName}, position, descriptor, scenario, dispatch);`;
-            const snapAddExtension = `case ActionDefNS.ExtensionType.${upperName}: {
-          return${showDialog ? showDialogLogic : ';'};
-		    }
-		  	`;
+            const snapAddExtension = `case ActionDefNS.ExtensionType.${upperName}: {\n${utils_1.space(10)}return${showDialog ? showDialogLogic : ';'}${utils_1.space(8)}}\n${utils_1.space(8)}`;
             yield utils_1.openFileAndInsertText(enums_1.fileEnum.ActionBarUtils, '// add extension action handler here', snapAddExtension);
         }
         else {
@@ -95,7 +92,9 @@ function activate(context) {
             yield utils_1.openFileAndInsertText(enums_1.fileEnum.ActionBarUtils, '// add action handler here', snap2);
         }
         const snap3 = `${upperName}Action,\n${utils_1.space(2)}`;
-        yield utils_1.openFileAndInsertText(enums_1.fileEnum.ActionExecutor, '// import action here', snap3);
+        if (!isExtensionAction) {
+            yield utils_1.openFileAndInsertText(enums_1.fileEnum.ActionExecutor, '// import action here', snap3);
+        }
         if (!isExtensionAction) {
             const snap4 = `case ActionType.${upperName}:\n${utils_1.space(8)}list = [new ${upperName}Action(def)];\n${utils_1.space(8)}break;\n${utils_1.space(6)}`;
             yield utils_1.openFileAndInsertText(enums_1.fileEnum.ActionExecutor, '// create action here', snap4);
