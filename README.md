@@ -5,15 +5,15 @@ Wyn dashboard dev tools
 ## Usage
 --------
 
-### F1 -> input "Add an action"
-### F1 -> input "Delete all local branchs but current branch"
+### F1 -> input "wyn: Add an action"
+### F1 -> input "wyn: Delete local branch"
 ### Open Setting.json -> click Extensions -> click 'wyn-dev-tools' -> click 'Edit in setting.json' -> edit hoverMapping object
 
 -------
 
 ## Release Notes
 
-### 0.0.10
+### 0.0.11
 
 Initial release of Wyn Dashboard Dev Tools
 
