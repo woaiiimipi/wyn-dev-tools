@@ -13,10 +13,15 @@ Wyn dashboard dev tools
 
 ## Release Notes
 
-### 0.0.9
+### 0.0.8
 
 Initial release of Wyn Dashboard Dev Tools
 
 
 #### Credits
 Icons taken from [Freepik](https://www.flaticon.com/authors/freepik)
+
+
+#### Publish
+vsce package
+vsce publish
