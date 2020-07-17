@@ -29,7 +29,7 @@
 		"commands": [
 			{
 				"command": "extension.deleteAllBranch",
-				"title": "Delete all local branchs but current branch"
+				"title": "wyn: delete local branch"
 			},
 			{
 				"command": "extension.addAction",

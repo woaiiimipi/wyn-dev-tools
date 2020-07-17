@@ -26,24 +26,33 @@ function activate(context) {
             };
         }
     });
-    const deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', () => {
+    const deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', () => __awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
         try {
             // @ts-ignore
             const git = simple_git_1.default(vscode.workspace.workspaceFolders[0].uri.fsPath);
-            git.branchLocal().then((data) => {
-                const deleteAllBranch = `git branch | grep -v "${data.current}" | xargs git branch -D`;
-                const terminal = vscode.window.createTerminal('delete branch');
-                terminal.sendText(deleteAllBranch);
-                setTimeout(() => {
-                    terminal.dispose();
-                }, 3000);
-            });
+            const data = yield git.branchLocal();
+            const regex = new RegExp(`release|develop|${data.current}`);
+            const items = data.all.map((branch) => ({ label: branch, picked: !regex.test(branch) }));
+            const result = yield vscode.window.showQuickPick(items, { canPickMany: true, ignoreFocusOut: true });
+            if (!((_a = result) === null || _a === void 0 ? void 0 : _a.length)) {
+                return;
+            }
+            const deleteBranches = result.map(i => i.label);
+            if (deleteBranches.includes(data.current)) {
+                const existBranch = (_b = items.find(i => !i.picked)) === null || _b === void 0 ? void 0 : _b.label;
+                yield git.checkout(existBranch);
+                vscode.window.showInformationMessage(`Your branch has checkout to branch <${existBranch}>.`);
+            }
+            yield git.deleteLocalBranches(deleteBranches, true);
+            vscode.window.showInformationMessage('^-^:Delete branches success!');
         }
         catch (error) {
+            vscode.window.showErrorMessage('~_~: Delete branches failed! The git register must have at least one branch.');
         }
-    });
+    }));
     const addAction = vscode.commands.registerCommand('extension.addAction', () => __awaiter(this, void 0, void 0, function* () {
-        var _a;
+        var _c;
         const actionName = yield showInputBox({ placeHolder: '请输入action名称' });
         const preItems = [
             { label: 'pivotCharts', picked: true },
@@ -53,9 +62,10 @@ function activate(context) {
             { label: 'tabContainer' },
             { label: 'slicer' },
             { label: 'spreadChart' },
+            { label: 'webContent' },
         ];
         const preResult = yield showQuickPick(preItems, { canPickMany: true, ignoreFocusOut: true, placeHolder: '请选择需要应用的Scenario类型' });
-        const preResultList = (_a = preResult) === null || _a === void 0 ? void 0 : _a.map(i => i.label);
+        const preResultList = (_c = preResult) === null || _c === void 0 ? void 0 : _c.map(i => i.label);
         const items = Object.keys(enums_1.scenarioMap).reduce((acc, key) => {
             // @ts-ignore
             return acc.concat(enums_1.scenarioMap[key](preResultList.includes(key)));

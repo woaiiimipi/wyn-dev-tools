@@ -19,20 +19,28 @@ export function activate(context: vscode.ExtensionContext) {
 			};
 		}
 	});
-	const deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', () => {
+	const deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', async () => {
 		try {
 			// @ts-ignore
 			const git: SimpleGit = simpleGit(vscode.workspace.workspaceFolders[0].uri.fsPath);
-			git.branchLocal().then((data) => {
-				const deleteAllBranch = `git branch | grep -v "${data.current}" | xargs git branch -D`;
-				const terminal = vscode.window.createTerminal('delete branch');
-				terminal.sendText(deleteAllBranch);
-				setTimeout(() => {
-					terminal.dispose();
-				}, 3000);
-			});
+			const data = await git.branchLocal();
+			const regex = new RegExp(`release|develop|${data.current}`);
+			
+			const items = data.all.map((branch): vscode.QuickPickItem => ({ label: branch, picked: !regex.test(branch) }));
+			const result = await vscode.window.showQuickPick(items, { canPickMany: true, ignoreFocusOut: true });
+			if (!result?.length) {
+				return;
+			}
+			const deleteBranches = result!.map(i => i.label);
+			if (deleteBranches.includes(data.current)) {
+				const existBranch = items.find(i => !i.picked)?.label!;
+				await git.checkout(existBranch);
+				vscode.window.showInformationMessage(`Your branch has checkout to branch <${existBranch}>.`);
+			}
+			await git.deleteLocalBranches(deleteBranches, true);
+			vscode.window.showInformationMessage('^-^:Delete branches success!');
 		} catch (error) {
-
+			vscode.window.showErrorMessage('~_~: Delete branches failed! The git register must have at least one branch.');
 		}
 	});
 	const addAction = vscode.commands.registerCommand('extension.addAction', async () => {
@@ -46,6 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
 			{ label: 'tabContainer' },
 			{ label: 'slicer' },
 			{ label: 'spreadChart' },
+			{ label: 'webContent' },
 		];
 		const preResult = await showQuickPick(preItems, { canPickMany: true, ignoreFocusOut: true, placeHolder: '请选择需要应用的Scenario类型' });
 		const preResultList = preResult?.map(i => i.label);
