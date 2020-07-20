@@ -11,6 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const simple_git_1 = require("simple-git");
+// @ts-ignore
+const OpenCC = require("node-opencc");
 const template_1 = require("./template");
 const enums_1 = require("./enums");
 const utils_1 = require("./utils");
@@ -138,7 +140,24 @@ function activate(context) {
         }
         utils_1.addActionForDefFiles(selectedScenarios, upperName, lowerName, isExtensionAction);
     }));
-    context.subscriptions.push(hover, deleteAllBranch, addAction);
+    const zhToTw = vscode.commands.registerCommand('extension.zhTw', () => __awaiter(this, void 0, void 0, function* () {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return;
+        }
+        const selection = editor.selection;
+        const text = editor.document.getText(selection);
+        const result = OpenCC.simplifiedToTaiwanWithPhrases(text);
+        const simple = yield vscode.window.showInputBox({ value: result || '' });
+        if (!simple) {
+            return;
+        }
+        console.log(simple);
+        // simple.replace(/ /g, '');
+        yield vscode.window.showInputBox({ value: OpenCC.simplifiedToTaiwanWithPhrases(simple) });
+    }));
+    console.log(OpenCC.simplifiedToTaiwanWithPhrases('组件'));
+    context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw);
 }
 exports.activate = activate;
 function deactivate() { }

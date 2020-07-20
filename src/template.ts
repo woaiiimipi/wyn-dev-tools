@@ -92,5 +92,18 @@ export const show${upperName}Dialog = showDraggableDialog(${upperName}Container,
     displayNameKey: 'actionBar.${lowerName}',
     iconCss: 'icon-${lowerName.replace(/\B([A-Z])/g, '-$1').toLowerCase()}',
   };
+  `,
+  zhToTw: (text: string) => `
+  <textarea id="text" value=${text}></textarea>
+  <button id="convert">Convert</button>
+  <button>Copy</button>
+  <script>
+    const text = window.clipboardData.getData('Text');
+    const convert = document.getElementById("convert");
+    convert.onclick = () => {
+      convert.value
+    }
+    document.getElementById('text');
+  <script>
   `
 };

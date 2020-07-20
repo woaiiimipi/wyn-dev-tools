@@ -1,8 +1,8 @@
 {
 	"name": "wyn-dev-tools",
-	"displayName": "Wyn dashboard development tools.",
+	"displayName": "Wyn Dashboard Development Tools",
 	"description": "1.Add an action.2.Delete all branchs but current branch.3.Delete",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"publisher": "boolxiao",
 	"repository": "https://github.com/woaiiimipi/wyn-dev-tools",
 	"homepage": "https://github.com/woaiiimipi/wyn-dev-tools",
@@ -34,6 +34,10 @@
 			{
 				"command": "extension.addAction",
 				"title": "wyn: Add an action"
+			},
+			{
+				"command": "extension.zhTw",
+				"title": "wyn: zh - zh-TW"
 			}
 		],
 		"configuration": {
@@ -71,6 +75,7 @@
 		"vscode-test": "^1.3.0"
 	},
 	"dependencies": {
+		"node-opencc": "^2.0.1",
 		"simple-git": "^2.11.0",
 		"translate": "1.1.2"
 	}

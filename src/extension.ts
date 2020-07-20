@@ -2,6 +2,9 @@
 
 import * as vscode from 'vscode';
 import simpleGit, { SimpleGit } from 'simple-git';
+// @ts-ignore
+import * as OpenCC from 'node-opencc';
+
 import { template } from './template';
 import { scenarioMap, fileEnum } from './enums';
 import { createFile, openFileAndInsertText, space, addActionForDefFiles } from './utils';
@@ -130,8 +133,24 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		addActionForDefFiles(selectedScenarios, upperName, lowerName, isExtensionAction);
 	});
-
-	context.subscriptions.push(hover, deleteAllBranch, addAction);
+	const zhToTw = vscode.commands.registerCommand('extension.zhTw', async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			return;
+		}
+		const selection = editor.selection;
+		const text = editor.document.getText(selection);
+		const result = OpenCC.simplifiedToTaiwanWithPhrases(text);
+		const simple = await vscode.window.showInputBox({ value: result || '' } );
+		if (!simple) {
+			return;
+		}
+		console.log(simple);
+		// simple.replace(/ /g, '');
+		await vscode.window.showInputBox({ value: OpenCC.simplifiedToTaiwanWithPhrases(simple) });
+		
+	});
+	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw);
 }
 
 export function deactivate() { }
