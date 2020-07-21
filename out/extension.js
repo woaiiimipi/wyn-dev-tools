@@ -10,13 +10,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
-const simple_git_1 = require("simple-git");
 // @ts-ignore
 const OpenCC = require("node-opencc");
 const template_1 = require("./template");
 const enums_1 = require("./enums");
 const utils_1 = require("./utils");
-const { showInputBox, showQuickPick } = vscode.window;
+const { showInputBox, showQuickPick, showInformationMessage } = vscode.window;
+const { registerCommand } = vscode.commands;
 function activate(context) {
     const hover = vscode.languages.registerHoverProvider({ scheme: '*', language: '*' }, {
         provideHover(document, position, token) {
@@ -28,11 +28,11 @@ function activate(context) {
             };
         }
     });
-    const deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', () => __awaiter(this, void 0, void 0, function* () {
+    const deleteAllBranch = registerCommand('extension.deleteAllBranch', () => __awaiter(this, void 0, void 0, function* () {
         var _a, _b;
         try {
             // @ts-ignore
-            const git = simple_git_1.default(vscode.workspace.workspaceFolders[0].uri.fsPath);
+            const git = utils_1.getGit();
             const data = yield git.branchLocal();
             const regex = new RegExp(`release|develop|${data.current}`);
             const items = data.all.map((branch) => ({ label: branch, picked: !regex.test(branch) }));
@@ -44,16 +44,16 @@ function activate(context) {
             if (deleteBranches.includes(data.current)) {
                 const existBranch = (_b = items.find(i => !i.picked)) === null || _b === void 0 ? void 0 : _b.label;
                 yield git.checkout(existBranch);
-                vscode.window.showInformationMessage(`Your branch has checkout to branch <${existBranch}>.`);
+                showInformationMessage(`Your branch has checkout to branch <${existBranch}>.`);
             }
             yield git.deleteLocalBranches(deleteBranches, true);
-            vscode.window.showInformationMessage('^-^:Delete branches success!');
+            showInformationMessage('^-^:Delete branches success!');
         }
         catch (error) {
             vscode.window.showErrorMessage('~_~: Delete branches failed! The git register must have at least one branch.');
         }
     }));
-    const addAction = vscode.commands.registerCommand('extension.addAction', () => __awaiter(this, void 0, void 0, function* () {
+    const addAction = registerCommand('extension.addAction', () => __awaiter(this, void 0, void 0, function* () {
         var _c;
         const actionName = yield showInputBox({ placeHolder: '请输入action名称' });
         const preItems = [
@@ -140,7 +140,7 @@ function activate(context) {
         }
         utils_1.addActionForDefFiles(selectedScenarios, upperName, lowerName, isExtensionAction);
     }));
-    const zhToTw = vscode.commands.registerCommand('extension.zhTw', () => __awaiter(this, void 0, void 0, function* () {
+    const zhToTw = registerCommand('extension.zhTw', () => __awaiter(this, void 0, void 0, function* () {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
             return;
@@ -156,8 +156,79 @@ function activate(context) {
         // simple.replace(/ /g, '');
         yield vscode.window.showInputBox({ value: OpenCC.simplifiedToTaiwanWithPhrases(simple) });
     }));
-    console.log(OpenCC.simplifiedToTaiwanWithPhrases('组件'));
-    context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw);
+    const pushToOrigin = registerCommand('extension.pushToOrigin', () => __awaiter(this, void 0, void 0, function* () {
+        try {
+            const git = utils_1.getGit();
+            yield git.add('.');
+            const commitMsg = yield vscode.window.showInputBox({ value: 'fix', prompt: 'Please input commit message.' });
+            yield git.commit(commitMsg || '');
+            yield git.push();
+        }
+        catch (error) {
+            showInformationMessage(error);
+        }
+    }));
+    const importScssToMain = vscode.commands.registerCommand('extension.importScssToMain', () => __awaiter(this, void 0, void 0, function* () {
+        var _d, _e, _f;
+        const findMainScss = (folderName, data) => __awaiter(this, void 0, void 0, function* () {
+            const files = yield utils_1.readDirectory(folderName);
+            const fileNames = files.map(i => i[0].replace(/\\/g, '/'));
+            const mainScss = fileNames.find(i => i.includes('main.scss'));
+            if (mainScss) {
+                if (!data.mainScss) {
+                    data.mainScss = mainScss;
+                    data.folder = folderName;
+                    return Promise.resolve();
+                }
+            }
+            const newFolderName = utils_1.getParentFolderName(folderName);
+            if (newFolderName.endsWith('frontend')) {
+                return Promise.resolve();
+            }
+            return yield findMainScss(newFolderName, data);
+        });
+        const curFile = (_d = utils_1.getCurrentFileName()) === null || _d === void 0 ? void 0 : _d.replace(/\\/g, '/');
+        if (!((_e = curFile) === null || _e === void 0 ? void 0 : _e.endsWith('scss'))) {
+            return;
+        }
+        const parentFolder = utils_1.getParentFolderName(curFile);
+        const data = { mainScss: '', folder: '' };
+        yield findMainScss(parentFolder, data);
+        if (!data.mainScss) {
+            return;
+        }
+        const relativePath = (_f = curFile) === null || _f === void 0 ? void 0 : _f.replace(utils_1.getParentFolderName(data.folder + '/' + data.mainScss), '');
+        const importContent = `@import '.${relativePath}';`;
+        let similarLineIndex = -1;
+        const findSimilarLine = (fileContent, text) => {
+            if (similarLineIndex !== -1) {
+                return;
+            }
+            const index = fileContent.lastIndexOf(text);
+            if (index !== -1) {
+                similarLineIndex = index;
+                return;
+            }
+            const newFolder = utils_1.getParentFolderName(text);
+            if (!newFolder.includes('/')) {
+                return;
+            }
+            findSimilarLine(fileContent, newFolder);
+        };
+        const mainScss = yield utils_1.getFile(data.folder + '/' + data.mainScss);
+        findSimilarLine(mainScss.getText(), utils_1.getParentFolderName(relativePath));
+        const editor = yield vscode.window.showTextDocument(mainScss, 1, false);
+        yield editor.edit(e => {
+            if (similarLineIndex !== -1) {
+                const position = new vscode.Position(mainScss.positionAt(similarLineIndex).line + 1, 0);
+                e.insert(position, importContent + '\n');
+            }
+            else {
+                e.insert(new vscode.Position(mainScss.eol, 0), importContent);
+            }
+        });
+    }));
+    context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, pushToOrigin, importScssToMain);
 }
 exports.activate = activate;
 function deactivate() { }

@@ -1,14 +1,24 @@
 import * as vscode from 'vscode';
+import simpleGit, { SimpleGit } from 'simple-git';
 import { fileEnum } from './enums';
 export const openFileAndInsertText = async (fileName: string, findText: string, insertText: string) => {
-	const doc = await vscode.workspace.openTextDocument(fileName);
-	const content = doc.getText();
-	const offset = content.indexOf(findText);
-	const position = doc.positionAt(offset);
-	const editor = await vscode.window.showTextDocument(doc, 1, false);
-	await editor.edit(e => {
-		e.insert(position, insertText);
-	});
+  const doc = await vscode.workspace.openTextDocument(fileName);
+  const content = doc.getText();
+  const offset = content.indexOf(findText);
+  const position = doc.positionAt(offset);
+  const editor = await vscode.window.showTextDocument(doc, 1, false);
+  await editor.edit(e => {
+    e.insert(position, insertText);
+  });
+};
+
+export const getFile = async (fileName: string) => {
+  const doc = await vscode.workspace.openTextDocument(fileName);
+  return doc;
+};
+export const getFileText = async (fileName: string) => {
+  const doc = await getFile(fileName);
+  return doc.getText();
 };
 
 export const openFileAndInsertTexts = async (fileInsetInfos: Def.InsertFileInfo[]) => {
@@ -19,7 +29,7 @@ export const openFileAndInsertTexts = async (fileInsetInfos: Def.InsertFileInfo[
 };
 export const space = (count: number) => ' '.repeat(count);
 export const createFile = async (path: string, content: string) => {
-	await vscode.workspace.fs.writeFile(vscode.Uri.file(path), Buffer.from(content));
+  await vscode.workspace.fs.writeFile(vscode.Uri.file(path), Buffer.from(content));
 };
 
 export const createFiles = async (fileInfos: Def.FileInfo[]) => {
@@ -29,7 +39,7 @@ export const createFiles = async (fileInfos: Def.FileInfo[]) => {
   }
 };
 
-export const addActionForDefFiles = async (selectedScenarios: vscode.QuickPickItem[], upperName: string, lowerName: string, isExtensionAction: boolean, ) => {
+export const addActionForDefFiles = async (selectedScenarios: vscode.QuickPickItem[], upperName: string, lowerName: string, isExtensionAction: boolean,) => {
   for (let i = 0; i < selectedScenarios.length; i++) {
     const def = selectedScenarios[i].label;
     let actionDef = `{
@@ -56,4 +66,22 @@ ${space(4)}},\n${space(4)}`;
       }
     }
   }
+};
+
+export const getGit = () => simpleGit(vscode.workspace.workspaceFolders![0].uri.fsPath);
+
+export const getCurrentFileName = () => {
+  const editor = vscode.window.activeTextEditor;
+  return editor?.document.fileName;
+};
+export const getParentFolderName = (name: string, separate?: string) => {
+  const separateIndex = name?.lastIndexOf(separate || '/');
+  return name?.slice(0, separateIndex);
+};
+export const readDirectory = async (fileName: string) => vscode.workspace.fs.readDirectory(vscode.Uri.file(fileName));
+
+export const getParentFolder = (path: string) => {
+  const separateIndex = path?.lastIndexOf('/');
+  const parentFolder = path?.slice(0, separateIndex);
+  return parentFolder;
 };

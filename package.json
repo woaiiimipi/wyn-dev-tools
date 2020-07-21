@@ -2,7 +2,7 @@
 	"name": "wyn-dev-tools",
 	"displayName": "Wyn Dashboard Development Tools",
 	"description": "1.Add an action.2.Delete all branchs but current branch.3.Delete",
-	"version": "0.0.12",
+	"version": "0.0.14",
 	"publisher": "boolxiao",
 	"repository": "https://github.com/woaiiimipi/wyn-dev-tools",
 	"homepage": "https://github.com/woaiiimipi/wyn-dev-tools",
@@ -38,6 +38,14 @@
 			{
 				"command": "extension.zhTw",
 				"title": "wyn: zh - zh-TW"
+			},
+			{
+				"command": "extension.pushToOrigin",
+				"title": "wyn: Push to origin"
+			},
+			{
+				"command": "extension.importScssToMain",
+				"title": "wyn: Import current file to closest main.scss."
 			}
 		],
 		"configuration": {

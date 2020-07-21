@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
+const simple_git_1 = require("simple-git");
 const enums_1 = require("./enums");
 exports.openFileAndInsertText = (fileName, findText, insertText) => __awaiter(void 0, void 0, void 0, function* () {
     const doc = yield vscode.workspace.openTextDocument(fileName);
@@ -20,6 +21,14 @@ exports.openFileAndInsertText = (fileName, findText, insertText) => __awaiter(vo
     yield editor.edit(e => {
         e.insert(position, insertText);
     });
+});
+exports.getFile = (fileName) => __awaiter(void 0, void 0, void 0, function* () {
+    const doc = yield vscode.workspace.openTextDocument(fileName);
+    return doc;
+});
+exports.getFileText = (fileName) => __awaiter(void 0, void 0, void 0, function* () {
+    const doc = yield exports.getFile(fileName);
+    return doc.getText();
 });
 exports.openFileAndInsertTexts = (fileInsetInfos) => __awaiter(void 0, void 0, void 0, function* () {
     for (let i = 0; i < fileInsetInfos.length; i++) {
@@ -67,4 +76,22 @@ ${exports.space(4)}},\n${exports.space(4)}`;
         }
     }
 });
+exports.getGit = () => simple_git_1.default(vscode.workspace.workspaceFolders[0].uri.fsPath);
+exports.getCurrentFileName = () => {
+    var _a;
+    const editor = vscode.window.activeTextEditor;
+    return (_a = editor) === null || _a === void 0 ? void 0 : _a.document.fileName;
+};
+exports.getParentFolderName = (name, separate) => {
+    var _a, _b;
+    const separateIndex = (_a = name) === null || _a === void 0 ? void 0 : _a.lastIndexOf(separate || '/');
+    return (_b = name) === null || _b === void 0 ? void 0 : _b.slice(0, separateIndex);
+};
+exports.readDirectory = (fileName) => __awaiter(void 0, void 0, void 0, function* () { return vscode.workspace.fs.readDirectory(vscode.Uri.file(fileName)); });
+exports.getParentFolder = (path) => {
+    var _a, _b;
+    const separateIndex = (_a = path) === null || _a === void 0 ? void 0 : _a.lastIndexOf('/');
+    const parentFolder = (_b = path) === null || _b === void 0 ? void 0 : _b.slice(0, separateIndex);
+    return parentFolder;
+};
 //# sourceMappingURL=utils.js.map

@@ -7,8 +7,9 @@ import * as OpenCC from 'node-opencc';
 
 import { template } from './template';
 import { scenarioMap, fileEnum } from './enums';
-import { createFile, openFileAndInsertText, space, addActionForDefFiles } from './utils';
-const { showInputBox, showQuickPick } = vscode.window;
+import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile } from './utils';
+const { showInputBox, showQuickPick, showInformationMessage } = vscode.window;
+const { registerCommand } = vscode.commands;
 export function activate(context: vscode.ExtensionContext) {
 
 	const hover = vscode.languages.registerHoverProvider({ scheme: '*', language: '*' }, {
@@ -22,10 +23,10 @@ export function activate(context: vscode.ExtensionContext) {
 			};
 		}
 	});
-	const deleteAllBranch = vscode.commands.registerCommand('extension.deleteAllBranch', async () => {
+	const deleteAllBranch = registerCommand('extension.deleteAllBranch', async () => {
 		try {
 			// @ts-ignore
-			const git: SimpleGit = simpleGit(vscode.workspace.workspaceFolders[0].uri.fsPath);
+			const git: SimpleGit = getGit();
 			const data = await git.branchLocal();
 			const regex = new RegExp(`release|develop|${data.current}`);
 			
@@ -38,15 +39,15 @@ export function activate(context: vscode.ExtensionContext) {
 			if (deleteBranches.includes(data.current)) {
 				const existBranch = items.find(i => !i.picked)?.label!;
 				await git.checkout(existBranch);
-				vscode.window.showInformationMessage(`Your branch has checkout to branch <${existBranch}>.`);
+				showInformationMessage(`Your branch has checkout to branch <${existBranch}>.`);
 			}
 			await git.deleteLocalBranches(deleteBranches, true);
-			vscode.window.showInformationMessage('^-^:Delete branches success!');
+			showInformationMessage('^-^:Delete branches success!');
 		} catch (error) {
 			vscode.window.showErrorMessage('~_~: Delete branches failed! The git register must have at least one branch.');
 		}
 	});
-	const addAction = vscode.commands.registerCommand('extension.addAction', async () => {
+	const addAction = registerCommand('extension.addAction', async () => {
 		const actionName = await showInputBox({ placeHolder: '请输入action名称' });
 
 		const preItems: vscode.QuickPickItem[] = [
@@ -133,7 +134,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		addActionForDefFiles(selectedScenarios, upperName, lowerName, isExtensionAction);
 	});
-	const zhToTw = vscode.commands.registerCommand('extension.zhTw', async () => {
+	const zhToTw = registerCommand('extension.zhTw', async () => {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			return;
@@ -148,9 +149,79 @@ export function activate(context: vscode.ExtensionContext) {
 		console.log(simple);
 		// simple.replace(/ /g, '');
 		await vscode.window.showInputBox({ value: OpenCC.simplifiedToTaiwanWithPhrases(simple) });
-		
 	});
-	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw);
+	const pushToOrigin = registerCommand('extension.pushToOrigin', async () => {
+		try {
+			const git = getGit();
+			await git.add('.');
+			const commitMsg = await vscode.window.showInputBox({ value: 'fix', prompt: 'Please input commit message.' });
+			await git.commit(commitMsg || '');
+			await git.push();
+		} catch (error) {
+			showInformationMessage(error);
+		}
+	});
+	const importScssToMain = vscode.commands.registerCommand('extension.importScssToMain', async () => {
+		const findMainScss = async (folderName: string, data: any): Promise<void> => {
+			const files = await readDirectory(folderName);
+			const fileNames = files.map(i => i[0].replace(/\\/g, '/'));
+			const mainScss = fileNames.find(i => i.includes('main.scss'));
+			if (mainScss) {
+				if (!data.mainScss) {
+					data.mainScss = mainScss;
+					data.folder = folderName;
+					return Promise.resolve();
+				}
+			}
+			const newFolderName = getParentFolderName(folderName);
+			if (newFolderName.endsWith('frontend')) {
+				return Promise.resolve();
+			}
+		 	return await findMainScss(newFolderName, data);
+		};
+
+		const curFile = getCurrentFileName()?.replace(/\\/g, '/');
+		if (!curFile?.endsWith('scss')) {
+			return;
+		}
+		const parentFolder = getParentFolderName(curFile);
+		const data = { mainScss: '', folder: '' };
+		await findMainScss(parentFolder!, data);
+		if (!data.mainScss) {
+			return;
+		}
+		const relativePath = curFile?.replace(getParentFolderName(data.folder + '/' + data.mainScss), '');
+		const importContent = `@import '.${relativePath}';`;
+		let similarLineIndex = -1;
+		const findSimilarLine = (fileContent: string, text: string) => {
+			if (similarLineIndex !== -1) {
+				return;
+			}
+			const index = fileContent.lastIndexOf(text);
+			if (index !== -1) {
+				similarLineIndex = index;
+				return;
+			}
+			const newFolder = getParentFolderName(text);
+			if (!newFolder.includes('/')) {
+				return;
+			}
+			findSimilarLine(fileContent, newFolder);
+		};
+		const mainScss = await getFile(data.folder + '/' + data.mainScss);
+		findSimilarLine(mainScss.getText(), getParentFolderName(relativePath));
+		
+		const editor = await vscode.window.showTextDocument(mainScss, 1, false);
+		await editor.edit(e => {
+			if (similarLineIndex !== -1) {
+				const position = new vscode.Position(mainScss.positionAt(similarLineIndex).line + 1, 0);
+				e.insert(position, importContent + '\n');
+			} else {
+				e.insert(new vscode.Position(mainScss.eol, 0), importContent);
+			}
+		});
+	});
+	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, pushToOrigin, importScssToMain);
 }
 
 export function deactivate() { }
