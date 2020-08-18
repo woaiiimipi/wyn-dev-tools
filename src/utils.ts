@@ -1,14 +1,17 @@
 import * as vscode from 'vscode';
 import simpleGit, { SimpleGit } from 'simple-git';
 import { fileEnum } from './enums';
-export const openFileAndInsertText = async (fileName: string, findText: string, insertText: string) => {
+export const openFileAndInsertText = async (fileName: string, findText: string, insertText: string, position?: vscode.Position) => {
+  let insertPosition = position;
   const doc = await vscode.workspace.openTextDocument(fileName);
   const content = doc.getText();
-  const offset = content.indexOf(findText);
-  const position = doc.positionAt(offset);
+  if (!insertPosition) {
+    const offset = content.indexOf(findText);
+    insertPosition = doc.positionAt(offset);
+  }
   const editor = await vscode.window.showTextDocument(doc, 1, false);
   await editor.edit(e => {
-    e.insert(position, insertText);
+    e.insert(insertPosition!, insertText);
   });
 };
 
@@ -84,4 +87,8 @@ export const getParentFolder = (path: string) => {
   const separateIndex = path?.lastIndexOf('/');
   const parentFolder = path?.slice(0, separateIndex);
   return parentFolder;
+};
+
+export const getHeadSpaceCount = (s: string) => {
+  return s.length - s.trimLeft().length;
 };

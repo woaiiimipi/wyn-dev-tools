@@ -12,14 +12,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const simple_git_1 = require("simple-git");
 const enums_1 = require("./enums");
-exports.openFileAndInsertText = (fileName, findText, insertText) => __awaiter(void 0, void 0, void 0, function* () {
+exports.openFileAndInsertText = (fileName, findText, insertText, position) => __awaiter(void 0, void 0, void 0, function* () {
+    let insertPosition = position;
     const doc = yield vscode.workspace.openTextDocument(fileName);
     const content = doc.getText();
-    const offset = content.indexOf(findText);
-    const position = doc.positionAt(offset);
+    if (!insertPosition) {
+        const offset = content.indexOf(findText);
+        insertPosition = doc.positionAt(offset);
+    }
     const editor = yield vscode.window.showTextDocument(doc, 1, false);
     yield editor.edit(e => {
-        e.insert(position, insertText);
+        e.insert(insertPosition, insertText);
     });
 });
 exports.getFile = (fileName) => __awaiter(void 0, void 0, void 0, function* () {
@@ -93,5 +96,8 @@ exports.getParentFolder = (path) => {
     const separateIndex = (_a = path) === null || _a === void 0 ? void 0 : _a.lastIndexOf('/');
     const parentFolder = (_b = path) === null || _b === void 0 ? void 0 : _b.slice(0, separateIndex);
     return parentFolder;
+};
+exports.getHeadSpaceCount = (s) => {
+    return s.length - s.trimLeft().length;
 };
 //# sourceMappingURL=utils.js.map

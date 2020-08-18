@@ -1,21 +1,32 @@
 'use strict';
 
 import * as vscode from 'vscode';
+// @ts-ignore
+import * as translate from 'translate'; 
 import simpleGit, { SimpleGit } from 'simple-git';
 // @ts-ignore
 import * as OpenCC from 'node-opencc';
-
 import { template } from './template';
 import { scenarioMap, fileEnum } from './enums';
-import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile } from './utils';
-const { showInputBox, showQuickPick, showInformationMessage } = vscode.window;
-const { registerCommand } = vscode.commands;
+import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile, getHeadSpaceCount } from './utils';
+import { getStatementPosition } from './astUtils';
+import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+const { 
+  window: { showInputBox, showQuickPick, showInformationMessage, showTextDocument },
+  workspace: { getConfiguration },
+  commands: { registerCommand, executeCommand },
+  scm: {},
+  languages: { registerHoverProvider },
+  extensions: {},
+	env: {},
+	Position, Range,
+} = vscode;
 export function activate(context: vscode.ExtensionContext) {
 
-	const hover = vscode.languages.registerHoverProvider({ scheme: '*', language: '*' }, {
+	const hover = registerHoverProvider({ scheme: '*', language: '*' }, {
 		provideHover(document, position, token) {
 			const hoveredWord = document.getText(document.getWordRangeAtPosition(position));
-			const config = vscode.workspace.getConfiguration();
+			const config = getConfiguration();
 
 			const hoverMappingResult = (config.get('hoverMapping') as any)[hoveredWord].split('\n');
 			return {
@@ -23,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 			};
 		}
 	});
-	const deleteAllBranch = registerCommand('extension.deleteAllBranch', async () => {
+	const deleteAllBranch = registerCommand('wyn.deleteAllBranch', async () => {
 		try {
 			// @ts-ignore
 			const git: SimpleGit = getGit();
@@ -47,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showErrorMessage('~_~: Delete branches failed! The git register must have at least one branch.');
 		}
 	});
-	const addAction = registerCommand('extension.addAction', async () => {
+	const addAction = registerCommand('wyn.addAction', async () => {
 		const actionName = await showInputBox({ placeHolder: '请输入action名称' });
 
 		const preItems: vscode.QuickPickItem[] = [
@@ -134,34 +145,32 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		addActionForDefFiles(selectedScenarios, upperName, lowerName, isExtensionAction);
 	});
-	const zhToTw = registerCommand('extension.zhTw', async () => {
+	const zhToTw = registerCommand('wyn.zhTw', async () => {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			return;
 		}
 		const selection = editor.selection;
 		const text = editor.document.getText(selection);
+		const nextLineRange = new Range(new Position(selection.end.line + 1, 0), new Position(selection.end.line + 2, 0));
+		const nextLineHeadSpaceCount = getHeadSpaceCount(editor.document.getText(nextLineRange));
 		const result = OpenCC.simplifiedToTaiwanWithPhrases(text);
-		const simple = await vscode.window.showInputBox({ value: result || '' } );
-		if (!simple) {
-			return;
-		}
-		console.log(simple);
-		// simple.replace(/ /g, '');
-		await vscode.window.showInputBox({ value: OpenCC.simplifiedToTaiwanWithPhrases(simple) });
+		const fileName = editor.document.fileName;
+		const twPath = fileName.includes('zh.js') ? fileName.replace('zh.js', 'zh_TW.ts'): fileName.replace('zh-CN.json', 'zh-TW.json');
+		await openFileAndInsertText(twPath, '', result + '\n' + space(nextLineHeadSpaceCount), selection.start);
 	});
-	const pushToOrigin = registerCommand('extension.pushToOrigin', async () => {
+	const pushToOrigin = registerCommand('wyn.pushToOrigin', async () => {
 		try {
 			const git = getGit();
 			await git.add('.');
-			const commitMsg = await vscode.window.showInputBox({ value: 'fix', prompt: 'Please input commit message.' });
+			const commitMsg = await showInputBox({ value: 'fix', prompt: 'Please input commit message.' });
 			await git.commit(commitMsg || '');
 			await git.push();
 		} catch (error) {
 			showInformationMessage(error);
 		}
 	});
-	const importScssToMain = vscode.commands.registerCommand('extension.importScssToMain', async () => {
+	const importScssToMain = registerCommand('wyn.importScssToMain', async () => {
 		const findMainScss = async (folderName: string, data: any): Promise<void> => {
 			const files = await readDirectory(folderName);
 			const fileNames = files.map(i => i[0].replace(/\\/g, '/'));
@@ -211,17 +220,38 @@ export function activate(context: vscode.ExtensionContext) {
 		const mainScss = await getFile(data.folder + '/' + data.mainScss);
 		findSimilarLine(mainScss.getText(), getParentFolderName(relativePath));
 		
-		const editor = await vscode.window.showTextDocument(mainScss, 1, false);
+		const editor = await showTextDocument(mainScss, 1, false);
 		await editor.edit(e => {
 			if (similarLineIndex !== -1) {
-				const position = new vscode.Position(mainScss.positionAt(similarLineIndex).line + 1, 0);
+				const position = new Position(mainScss.positionAt(similarLineIndex).line + 1, 0);
 				e.insert(position, importContent + '\n');
 			} else {
-				e.insert(new vscode.Position(mainScss.eol, 0), importContent);
+				e.insert(new Position(mainScss.eol, 0), importContent);
 			}
 		});
 	});
-	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, pushToOrigin, importScssToMain);
+	const i18n = registerCommand('wyn.enZhZhTw', async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			return;
+		}
+		const selection = editor.selection;
+		const text = editor.document.getText(selection);
+		const nextLineRange = new Range(new Position(selection.end.line + 1, 0), new Position(selection.end.line + 2, 0));
+		const nextLineHeadSpaceCount = getHeadSpaceCount(editor.document.getText(nextLineRange));
+		const zhText = text + '\n' + space(nextLineHeadSpaceCount);
+		const fileName = editor.document.fileName;
+		const zhPath = fileName.includes('en.js') ? fileName.replace('en.js', 'zh.js'): fileName.replace('en-US.json', 'zh-CN.json');
+		const twPath = editor.document.fileName.replace('en.js', 'zh_TW.ts');
+		await openFileAndInsertText(zhPath, '', zhText, selection.start);
+		// await openFileAndInsertText(twPath, '', OpenCC.simplifiedToTaiwanWithPhrases(zhText), selection.start);
+	});
+	// const toRender = registerCommand('wyn.toRender', async () => {
+	// 	const curFileText = await getFileText(getCurrentFileName()!);
+	// 	const renderLine = getStatementPosition(curFileText, 'render', AST_NODE_TYPES.MethodDefinition)!.line; 
+	// 	executeCommand('workbench.action.gotoLine', renderLine);
+	// });
+	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, importScssToMain, i18n);
 }
 
 export function deactivate() { }
