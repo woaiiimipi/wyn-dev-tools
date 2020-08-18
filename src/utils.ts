@@ -15,6 +15,12 @@ export const openFileAndInsertText = async (fileName: string, findText: string, 
   });
 };
 
+export const gotoRange = async (range: vscode.Range, selection?: vscode.Selection) => {
+  const editor = vscode.window.activeTextEditor;
+  selection && (editor!.selection = selection);
+  editor?.revealRange(range);
+};
+
 export const getFile = async (fileName: string) => {
   const doc = await vscode.workspace.openTextDocument(fileName);
   return doc;

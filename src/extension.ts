@@ -8,7 +8,7 @@ import simpleGit, { SimpleGit } from 'simple-git';
 import * as OpenCC from 'node-opencc';
 import { template } from './template';
 import { scenarioMap, fileEnum } from './enums';
-import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile, getHeadSpaceCount } from './utils';
+import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile, getHeadSpaceCount, gotoRange } from './utils';
 import { getStatementPosition } from './astUtils';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 const { 
@@ -96,7 +96,7 @@ export function activate(context: vscode.ExtensionContext) {
 			await openFileAndInsertText(fileEnum.Enum, '// add action menu type here', snap1);
 		}
 		if (showDialog) {
-			const snap22 = `import { show${upperName}Dialog } from '../../dataAnalyze/${upperName}/index';\n`;
+			const snap22 = `import { show${upperName}Dialog } from '../../dataAnalyze/${lowerName}/index';\n`;
 			await openFileAndInsertText(fileEnum.ActionBarUtils, '// import show dialog', snap22);
 		}
 		if (isExtensionAction) {
@@ -158,6 +158,9 @@ export function activate(context: vscode.ExtensionContext) {
 		const fileName = editor.document.fileName;
 		const twPath = fileName.includes('zh.js') ? fileName.replace('zh.js', 'zh_TW.ts'): fileName.replace('zh-CN.json', 'zh-TW.json');
 		await openFileAndInsertText(twPath, '', result + '\n' + space(nextLineHeadSpaceCount), selection.start);
+		console.log(nextLineRange.start.line);
+		gotoRange(new Range(selection.start, selection.end), selection);
+		// await executeCommand('workbench.action.gotoLine', nextLineRange.start.line);
 	});
 	const pushToOrigin = registerCommand('wyn.pushToOrigin', async () => {
 		try {
@@ -244,6 +247,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const zhPath = fileName.includes('en.js') ? fileName.replace('en.js', 'zh.js'): fileName.replace('en-US.json', 'zh-CN.json');
 		const twPath = editor.document.fileName.replace('en.js', 'zh_TW.ts');
 		await openFileAndInsertText(zhPath, '', zhText, selection.start);
+		gotoRange(new Range(selection.start, selection.end), selection);
 		// await openFileAndInsertText(twPath, '', OpenCC.simplifiedToTaiwanWithPhrases(zhText), selection.start);
 	});
 	// const toRender = registerCommand('wyn.toRender', async () => {
