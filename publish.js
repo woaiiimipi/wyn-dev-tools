@@ -5,14 +5,10 @@ const packagePath = './package.json';
 const updateVersion = async () => {
   const content = (await fs.readFile(packagePath)).toString();
   const beforeIdx = content.indexOf(`"version": "`) + 12;
-  console.log(beforeIdx);
   const afterIdx = content.indexOf(`"`, beforeIdx);
-  console.log(afterIdx);
   const version = content.substring(beforeIdx, afterIdx);
-  console.log(version);
   const versionArr = version.split('.').map(s => parseInt(s, 10));
   const updatedVersion = versionArr.map((i, idx) => idx === 2 ? i + 1 : i).join('.');
-  console.log(content.replace(version, updatedVersion));
   // const newContent = content.replace(version, version.split('.'));
   await fs.writeFile(packagePath, content.replace(version, updatedVersion));
 };
