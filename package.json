@@ -54,6 +54,14 @@
 			{
 				"command": "wyn.toRender",
 				"title": "wyn: Go to render"
+			},
+			{
+				"command": "wyn.diff",
+				"title": "wyn: Diff"
+			},
+			{
+				"command": "wyn.translation",
+				"title": "wyn: Translation"
 			}
 		],
 		"configuration": {

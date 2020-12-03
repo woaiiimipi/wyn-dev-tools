@@ -8,11 +8,11 @@ import simpleGit, { SimpleGit } from 'simple-git';
 import * as OpenCC from 'node-opencc';
 import { template } from './template';
 import { scenarioMap, fileEnum } from './enums';
-import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile, getHeadSpaceCount, gotoRange } from './utils';
+import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile, getHeadSpaceCount, gotoRange, getWebviewContent } from './utils';
 import { getStatementPosition } from './astUtils';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 const { 
-  window: { showInputBox, showQuickPick, showInformationMessage, showTextDocument },
+  window: { showInputBox, showQuickPick, showInformationMessage, showTextDocument, createWebviewPanel },
   workspace: { getConfiguration },
   commands: { registerCommand, executeCommand },
   scm: {},
@@ -255,7 +255,30 @@ export function activate(context: vscode.ExtensionContext) {
 	// 	const renderLine = getStatementPosition(curFileText, 'render', AST_NODE_TYPES.MethodDefinition)!.line; 
 	// 	executeCommand('workbench.action.gotoLine', renderLine);
 	// });
-	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, importScssToMain, i18n);
+	
+	const diff = registerCommand('wyn.diff', () => {
+		const panel = createWebviewPanel(
+			'catCodiDng', // Identifies the type of the webview. Used internally
+			'Diff File', // Title of the panel displayed to the user
+			vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+			{
+				enableScripts: true,
+			} // Webview options. More on these later.
+		);
+		panel.webview.html = getWebviewContent('https://www.diffchecker.com/');
+	});
+	const translation = registerCommand('wyn.translation', () => {
+		const panel = createWebviewPanel(
+			'catCodiDng', // Identifies the type of the webview. Used internally
+			'Diff File', // Title of the panel displayed to the user
+			vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+			{
+				enableScripts: true,
+			} // Webview options. More on these later.
+		);
+		panel.webview.html = getWebviewContent('http://fanyi.youdao.com/');
+	});
+	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, importScssToMain, i18n, diff, translation);
 }
 
 export function deactivate() { }

@@ -98,3 +98,25 @@ export const getParentFolder = (path: string) => {
 export const getHeadSpaceCount = (s: string) => {
   return s.length - s.trimLeft().length;
 };
+
+export const getWebviewContent = (url: string) => {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Cat Coding</title>
+		<style>
+			html, body {
+				margin: 0;
+				padding: 0;
+				width: 100%;
+				height: 100%;
+			}
+		</style>
+</head>
+<body>
+		<iframe src="${url}" width="100%" height="100%"></iframe>
+</body>
+</html>`;
+};
