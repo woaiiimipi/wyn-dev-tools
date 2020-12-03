@@ -60,8 +60,20 @@
 				"title": "wyn: Diff"
 			},
 			{
-				"command": "wyn.translation",
-				"title": "wyn: Translation"
+				"command": "wyn.translation.youdao",
+				"title": "wyn: Translation - 有道"
+			},
+			{
+				"command": "wyn.regexTester",
+				"title": "wyn: Regex Tester"
+			},
+			{
+				"command": "wyn.jsonTree",
+				"title": "wyn: Json Tree"
+			},
+			{
+				"command": "wyn.ramda",
+				"title": "wyn: Ramda Docs"
 			}
 		],
 		"configuration": {
@@ -84,7 +96,7 @@
 		"watch": "tsc -watch -p ./",
 		"pretest": "npm run compile && npm run lint",
 		"test": "node ./out/test/runTest.js",
-		"publish": "node ./publish.js"
+		"publish": "node ./publish.js && git add . && git commit -m \"update version\" && vsce publish"
 	},
 	"devDependencies": {
 		"@types/glob": "^7.1.1",

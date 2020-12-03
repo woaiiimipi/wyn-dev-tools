@@ -8,7 +8,7 @@ import simpleGit, { SimpleGit } from 'simple-git';
 import * as OpenCC from 'node-opencc';
 import { template } from './template';
 import { scenarioMap, fileEnum } from './enums';
-import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile, getHeadSpaceCount, gotoRange, getWebviewContent } from './utils';
+import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile, getHeadSpaceCount, gotoRange, getWebviewContent, registerWebViewCommands } from './utils';
 import { getStatementPosition } from './astUtils';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 const { 
@@ -255,30 +255,14 @@ export function activate(context: vscode.ExtensionContext) {
 	// 	const renderLine = getStatementPosition(curFileText, 'render', AST_NODE_TYPES.MethodDefinition)!.line; 
 	// 	executeCommand('workbench.action.gotoLine', renderLine);
 	// });
-	
-	const diff = registerCommand('wyn.diff', () => {
-		const panel = createWebviewPanel(
-			'catCodiDng', // Identifies the type of the webview. Used internally
-			'Diff File', // Title of the panel displayed to the user
-			vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-			{
-				enableScripts: true,
-			} // Webview options. More on these later.
-		);
-		panel.webview.html = getWebviewContent('https://www.diffchecker.com/');
-	});
-	const translation = registerCommand('wyn.translation', () => {
-		const panel = createWebviewPanel(
-			'catCodiDng', // Identifies the type of the webview. Used internally
-			'Diff File', // Title of the panel displayed to the user
-			vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-			{
-				enableScripts: true,
-			} // Webview options. More on these later.
-		);
-		panel.webview.html = getWebviewContent('http://fanyi.youdao.com/');
-	});
-	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, importScssToMain, i18n, diff, translation);
+	const webViewsCommands = registerWebViewCommands([
+		{ command: 'wyn.diff', url: 'https://www.diffchecker.com/', title: 'Diff' },
+		{ command: 'wyn.translation.youdao', url: 'http://fanyi.youdao.com/', title: '中 <-> 英' },
+		{ command: 'wyn.regexTester', url: 'https://www.regextester.com/', title: 'Regex Tester' },
+		{ command: 'wyn.jsonTree', url: 'https://jsonformatter.org/json-viewer', title: 'JSON Tree' },
+		{ command: 'wyn.ramda', url: 'https://ramdajs.com/docs/#', title: 'Ramda Docs' },
+	]);
+	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, importScssToMain, i18n, ...webViewsCommands);
 }
 
 export function deactivate() { }

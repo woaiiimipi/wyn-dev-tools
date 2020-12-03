@@ -1,6 +1,16 @@
 import * as vscode from 'vscode';
 import simpleGit, { SimpleGit } from 'simple-git';
 import { fileEnum } from './enums';
+const { 
+  window: { showInputBox, showQuickPick, showInformationMessage, showTextDocument, createWebviewPanel },
+  workspace: { getConfiguration },
+  commands: { registerCommand, executeCommand },
+  scm: {},
+  languages: { registerHoverProvider },
+  extensions: {},
+	env: {},
+	Position, Range,
+} = vscode;
 export const openFileAndInsertText = async (fileName: string, findText: string, insertText: string, position?: vscode.Position) => {
   let insertPosition = position;
   const doc = await vscode.workspace.openTextDocument(fileName);
@@ -116,7 +126,27 @@ export const getWebviewContent = (url: string) => {
 		</style>
 </head>
 <body>
-		<iframe src="${url}" width="100%" height="100%"></iframe>
+		<iframe allow="payment" src="${url}" width="100%" height="100%"></iframe>
 </body>
 </html>`;
+};
+interface WebViewItem {
+  command: string;
+  url: string;
+  title: string;
+}
+export const registerWebViewCommands = (webViewList: WebViewItem[]) => {
+  return webViewList.map(({ command, url, title }) => {
+    return registerCommand(command, () => {
+      const panel = createWebviewPanel(
+        'catCodiDng', // Identifies the type of the webview. Used internally
+        title, // Title of the panel displayed to the user
+        vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+        {
+          enableScripts: true,
+        } // Webview options. More on these later.
+      );
+      panel.webview.html = getWebviewContent(url);
+    });
+  });
 };
