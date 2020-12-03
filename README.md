@@ -10,6 +10,8 @@ Wyn dashboard dev tools
 ### F1 -> Input "wyn: zh -> zh-TW"
 ### F1 -> Input "wyn: Import current file to closest main.scss"
 ### F1 -> Input "wyn: Push to origin"
+### F1 -> Input "wyn: Diff"
+### F1 -> Input "wyn: Translation"
 ### Open Setting.json -> click Extensions -> click 'wyn-dev-tools' -> click 'Edit in setting.json' -> edit hoverMapping object
 
 -------

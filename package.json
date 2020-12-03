@@ -2,7 +2,7 @@
 	"name": "wyn-dev-tools",
 	"displayName": "Wyn Dashboard Development Tools",
 	"description": "1.Add an action.2.Delete all branchs but current branch.3.Delete",
-	"version": "0.0.17",
+	"version": "0.0.18",
 	"publisher": "boolxiao",
 	"repository": "https://github.com/woaiiimipi/wyn-dev-tools",
 	"homepage": "https://github.com/woaiiimipi/wyn-dev-tools",
