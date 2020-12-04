@@ -6,11 +6,12 @@ import * as translate from 'translate';
 import simpleGit, { SimpleGit } from 'simple-git';
 // @ts-ignore
 import * as OpenCC from 'node-opencc';
-import { template } from './template';
-import { scenarioMap, fileEnum } from './enums';
-import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile, getHeadSpaceCount, gotoRange, getWebviewContent, registerWebViewCommands } from './utils';
-import { getStatementPosition } from './astUtils';
+import { template } from './utils/template';
+import { scenarioMap, fileEnum } from './utils/enums';
+import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit, getFileText, getParentFolderName, getCurrentFileName, readDirectory, getFile, getHeadSpaceCount, gotoRange, getWebviewContent, registerWebViewCommands } from './utils/utils';
+import { getStatementPosition } from './utils/astUtils';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+import { getTestSitesInfo } from './utils/netUtils';
 const { 
   window: { showInputBox, showQuickPick, showInformationMessage, showTextDocument, createWebviewPanel },
   workspace: { getConfiguration },
@@ -255,6 +256,53 @@ export function activate(context: vscode.ExtensionContext) {
 	// 	const renderLine = getStatementPosition(curFileText, 'render', AST_NODE_TYPES.MethodDefinition)!.line; 
 	// 	executeCommand('workbench.action.gotoLine', renderLine);
 	// });
+	const testSitesInf = registerCommand('wyn.testSitesInfo', async () => {
+		 const info = await getTestSitesInfo();
+		 const generateHtml = () => {
+			 const convertedArr = [];
+			 for(let key in info) {
+				 const { name, owner } = info[key];
+				 convertedArr.push({ name, owner });
+			 };
+			 const dom = convertedArr.map(({ owner, name }) => `<div class="owner">${owner}:</div><div class="site-name">${name}</div>`).join('');
+			 const style = `
+			 	 .owner {
+					font-size: 25px;
+					 color: skyblue;
+				 }
+				 .site-name {
+					 color: yellow;
+					 margin-bottom: 10px;
+					 font-size: 30px;
+				 }	
+			 `;
+			 return `
+			 <!DOCTYPE html>
+			 <html lang="en">
+			 <head>
+				 <meta charset="UTF-8">
+				 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+				 <title>Document</title>
+				 <style>
+				 	 ${style}
+				 </style>
+			 </head>
+			 <body>
+				 ${dom}
+			 </body>
+			 </html>
+			 `;
+		 };
+		 const panel = createWebviewPanel(
+			'catCodiDng', // Identifies the type of the webview. Used internally
+				'Test Sites', // Title of the panel displayed to the user
+				vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+				{
+					enableScripts: true,
+				} // Webview options. More on these later.
+			);
+			panel.webview.html = generateHtml();
+	});
 	const webViewsCommands = registerWebViewCommands([
 		{ command: 'wyn.diff', url: 'https://www.diffchecker.com/', title: 'Diff' },
 		{ command: 'wyn.translation.youdao', url: 'http://fanyi.youdao.com/', title: '中 <-> 英' },
@@ -262,7 +310,7 @@ export function activate(context: vscode.ExtensionContext) {
 		{ command: 'wyn.jsonTree', url: 'https://jsonformatter.org/json-viewer', title: 'JSON Tree' },
 		{ command: 'wyn.ramda', url: 'https://ramdajs.com/docs/#', title: 'Ramda Docs' },
 	]);
-	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, importScssToMain, i18n, ...webViewsCommands);
+	context.subscriptions.push(hover, deleteAllBranch, addAction, zhToTw, importScssToMain, i18n, testSitesInf, ...webViewsCommands);
 }
 
 export function deactivate() { }
