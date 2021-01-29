@@ -12,6 +12,7 @@ import { createFile, openFileAndInsertText, space, addActionForDefFiles, getGit,
 import { getStatementPosition } from './utils/astUtils';
 import { AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { getTestSitesInfo } from './utils/netUtils';
+import { toDoListHtml } from './utils/htmls';
 const { 
   window: { showInputBox, showQuickPick, showInformationMessage, showTextDocument, createWebviewPanel },
   workspace: { getConfiguration },
@@ -246,7 +247,13 @@ export function activate(context: vscode.ExtensionContext) {
 		const zhText = text + '\n' + space(nextLineHeadSpaceCount);
 		const fileName = editor.document.fileName;
 		const zhPath = fileName.includes('en.js') ? fileName.replace('en.js', 'zh.js'): fileName.replace('en-US.json', 'zh-CN.json');
+		const esPath = fileName.includes('en.js') ? fileName.replace('en.js', 'es.ts'): fileName.replace('en-US.json', 'es.json');
+		const plPath = fileName.includes('en.js') ? fileName.replace('en.js', 'pl.ts'): fileName.replace('en-US.json', 'pl.json');
 		const twPath = editor.document.fileName.replace('en.js', 'zh_TW.ts');
+		await openFileAndInsertText(esPath, '', zhText, selection.start);
+		// gotoRange(new Range(selection.start, selection.end), selection);
+		await openFileAndInsertText(plPath, '', zhText, selection.start);
+		// gotoRange(new Range(selection.start, selection.end), selection);
 		await openFileAndInsertText(zhPath, '', zhText, selection.start);
 		gotoRange(new Range(selection.start, selection.end), selection);
 		// await openFileAndInsertText(twPath, '', OpenCC.simplifiedToTaiwanWithPhrases(zhText), selection.start);
@@ -303,9 +310,20 @@ export function activate(context: vscode.ExtensionContext) {
 			);
 			panel.webview.html = generateHtml();
 	});
+	// const toDo = registerCommand('wyn.todo', async () => {
+	// 	 const generateHtml = toDoListHtml;
+	// 	 const panel = createWebviewPanel(
+	// 		'ToDoList', // Identifies the type of the webview. Used internally
+	// 			'To Do List', // Title of the panel displayed to the user
+	// 			vscode.ViewColumn.One, // Editor column to show the new webview panel in.
+	// 			{
+	// 				enableScripts: true,
+	// 			} // Webview options. More on these later.
+	// 		);
+	// 		panel.webview.html = generateHtml();
+	// });
 	const webViewsCommands = registerWebViewCommands([
 		{ command: 'wyn.diff', url: 'https://www.diffchecker.com/', title: 'Diff' },
-		{ command: 'wyn.translation.youdao', url: 'http://fanyi.youdao.com/', title: '中 <-> 英' },
 		{ command: 'wyn.regexTester', url: 'https://www.regextester.com/', title: 'Regex Tester' },
 		{ command: 'wyn.jsonTree', url: 'https://jsonformatter.org/json-viewer', title: 'JSON Tree' },
 		{ command: 'wyn.ramda', url: 'https://ramdajs.com/docs/#', title: 'Ramda Docs' },

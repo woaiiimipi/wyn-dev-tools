@@ -41,7 +41,7 @@
 			},
 			{
 				"command": "wyn.enZhZhTw",
-				"title": "wyn: en -> zh"
+				"title": "wyn: en -> zh & es & pl"
 			},
 			{
 				"command": "wyn.pushToOrigin",
@@ -78,6 +78,10 @@
 			{
 				"command": "wyn.testSitesInfo",
 				"title": "wyn: Test Sites Info"
+			},
+			{
+				"command": "wyn.todo",
+				"title": "wyn: To Do List"
 			}
 		],
 		"configuration": {
