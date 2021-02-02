@@ -1,6 +1,7 @@
 # After complete your code, you need only run 
 ``` bash
 node publish.js
+vsce publish
 ```
 #### Publish
 vsce package

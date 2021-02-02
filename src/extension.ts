@@ -147,19 +147,34 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		addActionForDefFiles(selectedScenarios, upperName, lowerName, isExtensionAction);
 	});
+	const _getNextLineInfo = (editor: vscode.TextEditor) => {
+		const selection = editor.selection;
+		const nextLineRange = new Range(new Position(selection.end.line + 1, 0), new Position(selection.end.line + 2, 0));
+		const nextLineText = editor.document.getText(nextLineRange);
+		const nextLineHeadSpaceCount = getHeadSpaceCount(nextLineText);
+		const isEndLine = nextLineText.trimLeft().startsWith('}');
+		const startPosition = isEndLine ? selection.start.translate(0, -2) : selection.start;
+		return {
+			isEndLine,
+			nextLineText,
+			startPosition,
+			nextLineHeadSpaceCount,
+		}
+	}
 	const zhToTw = registerCommand('wyn.zhTw', async () => {
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			return;
 		}
+		const { isEndLine, nextLineHeadSpaceCount, startPosition } = _getNextLineInfo(editor);
 		const selection = editor.selection;
 		const text = editor.document.getText(selection);
 		const nextLineRange = new Range(new Position(selection.end.line + 1, 0), new Position(selection.end.line + 2, 0));
-		const nextLineHeadSpaceCount = getHeadSpaceCount(editor.document.getText(nextLineRange));
 		const result = OpenCC.simplifiedToTaiwanWithPhrases(text);
 		const fileName = editor.document.fileName;
 		const twPath = fileName.includes('zh.js') ? fileName.replace('zh.js', 'zh_TW.ts'): fileName.replace('zh-CN.json', 'zh-TW.json');
-		await openFileAndInsertText(twPath, '', result + '\n' + space(nextLineHeadSpaceCount), selection.start);
+		const insertText = (isEndLine ? space(2): '') + result + '\n' + space(nextLineHeadSpaceCount);
+		await openFileAndInsertText(twPath, '', insertText, startPosition);
 		console.log(nextLineRange.start.line);
 		gotoRange(new Range(selection.start, selection.end), selection);
 		// await executeCommand('workbench.action.gotoLine', nextLineRange.start.line);
@@ -240,21 +255,19 @@ export function activate(context: vscode.ExtensionContext) {
 		if (!editor) {
 			return;
 		}
+		const { isEndLine, nextLineHeadSpaceCount, startPosition } = _getNextLineInfo(editor);
 		const selection = editor.selection;
 		const text = editor.document.getText(selection);
 		const nextLineRange = new Range(new Position(selection.end.line + 1, 0), new Position(selection.end.line + 2, 0));
-		const nextLineHeadSpaceCount = getHeadSpaceCount(editor.document.getText(nextLineRange));
-		const zhText = text + '\n' + space(nextLineHeadSpaceCount);
+		const zhText = (isEndLine ? space(2): '') + text + '\n' + space(nextLineHeadSpaceCount);
 		const fileName = editor.document.fileName;
 		const zhPath = fileName.includes('en.js') ? fileName.replace('en.js', 'zh.js'): fileName.replace('en-US.json', 'zh-CN.json');
 		const esPath = fileName.includes('en.js') ? fileName.replace('en.js', 'es.ts'): fileName.replace('en-US.json', 'es.json');
 		const plPath = fileName.includes('en.js') ? fileName.replace('en.js', 'pl.ts'): fileName.replace('en-US.json', 'pl.json');
 		const twPath = editor.document.fileName.replace('en.js', 'zh_TW.ts');
-		await openFileAndInsertText(esPath, '', zhText, selection.start);
-		// gotoRange(new Range(selection.start, selection.end), selection);
-		await openFileAndInsertText(plPath, '', zhText, selection.start);
-		// gotoRange(new Range(selection.start, selection.end), selection);
-		await openFileAndInsertText(zhPath, '', zhText, selection.start);
+		await openFileAndInsertText(esPath, '', zhText, startPosition);
+		await openFileAndInsertText(plPath, '', zhText, startPosition);
+		await openFileAndInsertText(zhPath, '', zhText, startPosition);
 		gotoRange(new Range(selection.start, selection.end), selection);
 		// await openFileAndInsertText(twPath, '', OpenCC.simplifiedToTaiwanWithPhrases(zhText), selection.start);
 	});
