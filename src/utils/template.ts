@@ -42,7 +42,6 @@ export default class ${upperName}Action extends ActionBase {
   containerts: (upperName: string) => 
 `import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { fromState, fromScenario } from 'PureUtils';
 
 interface ${upperName}ContainerProps {
   scenario: any;
@@ -78,7 +77,7 @@ export class ${upperName}Container extends Component<${upperName}ContainerProps,
 }
 `,
   containerindex: (upperName: string, lowerName: string) =>
-`import { showDraggableDialog } from 'CommonComponents3';
+`import { showDraggableDialog } from 'CommonComponents';
 
 import { ${upperName}Container } from './${upperName}Container';
 
