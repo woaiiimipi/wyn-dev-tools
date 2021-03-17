@@ -130,18 +130,18 @@ export function activate(context: vscode.ExtensionContext) {
 			await createFile(folder + fileEnum.containerindex, template.containerindex(upperName, lowerName));
 			await openFileAndInsertText(fileEnum.mainScss, '// add import here', `@import './scenario/dataAnalyze/${lowerName}/${upperName}Container.scss';\n`);
 		}
-		const snap6 = `${lowerName}: '${upperName.replace(/\B([A-Z])/g, ' $1')}',\n${space(4)}`;
-		await openFileAndInsertText(fileEnum.en, '// add action name here', snap6);
-		const snap7 = `${lowerName}: '',\n${space(4)}`;
-		await openFileAndInsertText(fileEnum.zh, '// add action name here', snap7);
-		await openFileAndInsertText(fileEnum.zh_TW, '// add action name here', snap7);
-		if (showDialog) {
-			const snap8 = `${lowerName}: {\n${space(6)}title: '${upperName.replace(/\B([A-Z])/g, ' $1')}',\n${space(4)}},\n${space(4)}`;
-			await openFileAndInsertText(fileEnum.en, '// add action dialog here', snap8);
-			const snap9 = `${lowerName}: {\n${space(6)}title: '',\n${space(4)}},\n${space(4)}`;
-			await openFileAndInsertText(fileEnum.zh, '// add action dialog here', snap9);
-			await openFileAndInsertText(fileEnum.zh_TW, '// add action dialog here', snap9);
-		}
+		// const snap6 = `${lowerName}: '${upperName.replace(/\B([A-Z])/g, ' $1')}',\n${space(4)}`;
+		// await openFileAndInsertText(fileEnum.en, '// add action name here', snap6);
+		// const snap7 = `${lowerName}: '',\n${space(4)}`;
+		// await openFileAndInsertText(fileEnum.zh, '// add action name here', snap7);
+		// await openFileAndInsertText(fileEnum.zh_TW, '// add action name here', snap7);
+		// if (showDialog) {
+		// 	const snap8 = `${lowerName}: {\n${space(6)}title: '${upperName.replace(/\B([A-Z])/g, ' $1')}',\n${space(4)}},\n${space(4)}`;
+		// 	await openFileAndInsertText(fileEnum.en, '// add action dialog here', snap8);
+		// 	const snap9 = `${lowerName}: {\n${space(6)}title: '',\n${space(4)}},\n${space(4)}`;
+		// 	await openFileAndInsertText(fileEnum.zh, '// add action dialog here', snap9);
+		// 	await openFileAndInsertText(fileEnum.zh_TW, '// add action dialog here', snap9);
+		// }
 		if (!selectedScenarios) {
 			return;
 		}
@@ -172,7 +172,7 @@ export function activate(context: vscode.ExtensionContext) {
 		const nextLineRange = new Range(new Position(selection.end.line + 1, 0), new Position(selection.end.line + 2, 0));
 		const result = OpenCC.simplifiedToTaiwanWithPhrases(text);
 		const fileName = editor.document.fileName;
-		const twPath = fileName.includes('zh.js') ? fileName.replace('zh.js', 'zh_TW.ts'): fileName.replace('zh-CN.json', 'zh-TW.json');
+		const twPath = fileName.includes('zh.json') ? fileName.replace('zh.json', 'zh_TW.json'): fileName.replace('zh-CN.json', 'zh-TW.json');
 		const insertText = (isEndLine ? space(2): '') + result + '\n' + space(nextLineHeadSpaceCount);
 		await openFileAndInsertText(twPath, '', insertText, startPosition);
 		console.log(nextLineRange.start.line);
@@ -261,10 +261,10 @@ export function activate(context: vscode.ExtensionContext) {
 		const nextLineRange = new Range(new Position(selection.end.line + 1, 0), new Position(selection.end.line + 2, 0));
 		const zhText = (isEndLine ? space(2): '') + text + '\n' + space(nextLineHeadSpaceCount);
 		const fileName = editor.document.fileName;
-		const zhPath = fileName.includes('en.js') ? fileName.replace('en.js', 'zh.js'): fileName.replace('en-US.json', 'zh-CN.json');
-		const esPath = fileName.includes('en.js') ? fileName.replace('en.js', 'es.ts'): fileName.replace('en-US.json', 'es.json');
-		const plPath = fileName.includes('en.js') ? fileName.replace('en.js', 'pl.ts'): fileName.replace('en-US.json', 'pl.json');
-		const twPath = editor.document.fileName.replace('en.js', 'zh_TW.ts');
+		const zhPath = fileName.includes('en.json') ? fileName.replace('en.json', 'zh.json'): fileName.replace('en-US.json', 'zh-CN.json');
+		const esPath = fileName.includes('en.json') ? fileName.replace('en.json', 'es.json'): fileName.replace('en-US.json', 'es.json');
+		const plPath = fileName.includes('en.json') ? fileName.replace('en.json', 'pl.json'): fileName.replace('en-US.json', 'pl.json');
+		const twPath = editor.document.fileName.replace('en.json', 'zh_TW.json');
 		await openFileAndInsertText(esPath, '', zhText, startPosition);
 		await openFileAndInsertText(plPath, '', zhText, startPosition);
 		await openFileAndInsertText(zhPath, '', zhText, startPosition);
