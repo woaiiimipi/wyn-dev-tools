@@ -1,7 +1,6 @@
 export const template = {
   action: (lowerName: string, upperName: string) =>
 `import { CheckFieldType, ActionMenuType } from 'Enums';
-import Property from '../../common/Property';
 import { ActionDefNS } from '../../../interfaces';
 import { checkCondition } from '../utils/actionStatusUtils';
 import ActionBase from '../ActionBase';
