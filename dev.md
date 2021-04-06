@@ -1,7 +1,6 @@
 # After complete your code, you need only run 
 ``` bash
-node publish.js
-vsce publish
+npm run publish
 ```
 
 boolxiao
