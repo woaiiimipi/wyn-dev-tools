@@ -122,7 +122,7 @@
 	},
 	"dependencies": {
 		"@typescript-eslint/typescript-estree": "^3.7.0",
-		"node-fetch": "^2.6.1",
+		"node-fetch": "^2.6.7",
 		"node-opencc": "^2.0.1",
 		"simple-git": "^2.11.0",
 		"translate": "^1.1.2"
